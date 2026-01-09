@@ -1,0 +1,26 @@
+app/
+├── src/main/java/com/example/theplaybook/
+│   ├── ThePlayBookApp.kt (Application Class)
+│   ├── MainActivity.kt
+│   ├── auth/
+│   │   └── SteamAuthManager.kt
+│   ├── data/
+│   │   ├── local/
+│   │   │   ├── GameDatabase.kt
+│   │   │   ├── GameDao.kt
+│   │   │   └── entities/
+│   │   │       ├── GameEntity.kt
+│   │   │       └── AchievementEntity.kt
+│   │   └── remote/
+│   │       ├── SteamApiService.kt
+│   │       └── models/
+│   ├── repository/
+│   │   └── GameRepository.kt
+│   └── ui/
+│       ├── login/
+│       │   ├── LoginActivity.kt
+│       │   └── LoginViewModel.kt
+│       └── dashboard/
+│           ├── DashboardActivity.kt
+│           ├── DashboardViewModel.kt
+│           └── fragments/
