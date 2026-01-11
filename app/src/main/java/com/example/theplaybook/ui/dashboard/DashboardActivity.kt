@@ -1,5 +1,6 @@
 package com.example.theplaybook.ui.dashboard
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -17,7 +18,7 @@ class DashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDashboardBinding.inflate(layoutInflater)
+        binding = ActivityDashboardBinding.inflate(layoutInflater) // Questo carica activity_dashboard.xml
         setContentView(binding.root)
 
         setupToolbar()

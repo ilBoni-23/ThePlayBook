@@ -1,3 +1,35 @@
 <resources>
+    <!-- App -->
     <string name="app_name">ThePlayBook</string>
+    <string name="app_slogan">Tutte le tue statistiche su un\'unica app</string>
+    <string name="app_logo">Logo ThePlayBook</string>
+
+    <!-- Login -->
+    <string name="login_with_steam">Accedi con Steam</string>
+    <string name="continue_without_account">Continua senza account</string>
+
+    <!-- Dashboard -->
+    <string name="steam_profile">Profilo Steam</string>
+    <string name="steam_icon">Icona Steam</string>
+    <string name="user_avatar">Avatar utente</string>
+    <string name="total_statistics">Statistiche Totali</string>
+    <string name="total_hours">Ore Giocate</string>
+    <string name="total_games">Giochi</string>
+    <string name="recent_games">Giochi Recenti</string>
+    <string name="nearly_completed">Obiettivi Quasi Completati</string>
+
+    <!-- Messaggi -->
+    <string name="no_recent_games">Nessun gioco recente</string>
+    <string name="no_nearly_completed">Nessun obiettivo quasi completato</string>
+    <string name="loading">Caricamento...</string>
+    <string name="error_loading">Errore nel caricamento</string>
+    <string name="retry">Riprova</string>
+    <string name="refresh">Aggiorna</string>
+    <string name="logout">Esci</string>
+
+    <!-- Menu -->
+    <string name="menu_profile">Profilo</string>
+    <string name="menu_settings">Impostazioni</string>
+    <string name="menu_help">Aiuto</string>
+    <string name="menu_about">Informazioni</string>
 </resources>

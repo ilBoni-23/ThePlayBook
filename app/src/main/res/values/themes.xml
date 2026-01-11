@@ -1,5 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Tema scuro (base) -->
+    <style name="Theme.ThePlayBook" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorPrimaryVariant">@color/primary_light</item>
+        <item name="colorOnPrimary">@color/white</item>
 
-    <style name="Theme.ThePlayBook" parent="android:Theme.Material.Light.NoActionBar" />
+        <item name="colorSecondary">@color/steam_blue</item>
+        <item name="colorSecondaryVariant">@color/steam_blue_light</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="android:statusBarColor" tools:targetApi="21">@color/background_dark</item>
+        <item name="android:navigationBarColor" tools:targetApi="21">@color/background_dark</item>
+
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:colorBackground">@color/background_dark</item>
+
+        <item name="materialButtonStyle">@style/Widget.ThePlayBook.Button</item>
+        <item name="cardViewStyle">@style/Widget.ThePlayBook.CardView</item>
+    </style>
+
+    <!-- Stile per bottoni -->
+    <style name="Widget.ThePlayBook.Button" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">8dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <!-- Stile per card -->
+    <style name="Widget.ThePlayBook.CardView" parent="CardView">
+        <item name="cardElevation">4dp</item>
+        <item name="cardUseCompatPadding">true</item>
+    </style>
+
+    <!-- Tema senza ActionBar per Login -->
+    <style name="Theme.ThePlayBook.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>
