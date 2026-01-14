@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Cerchio di sfondo usando path invece di circle -->
+    <path
+        android:fillColor="#FF6A00"
+        android:pathData="M60,10a50,50 0 1,1 0,100a50,50 0 1,1 0,-100z"/>
+
+    <!-- Lettera P -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,30v60h20c10,0 15,-5 15,-15s-5,-15 -15,-15h-20v-30"/>
+
+    <!-- Lettera B -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M75,30v60h15c5,0 10,-2.5 10,-7.5s-5,-7.5 -10,-7.5c10,0 10,-10 10,-15s0,-15 -10,-15c10,0 10,-10 10,-15s0,-15 -10,-15z"/>
+</vector>

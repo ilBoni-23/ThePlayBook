@@ -1,203 +1,90 @@
 package com.example.theplaybook.repository
 
 import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import com.example.theplaybook.data.local.GameDao
-import com.example.theplaybook.data.local.entities.AchievementEntity
-import com.example.theplaybook.data.local.entities.GameEntity
-import com.example.theplaybook.data.remote.SteamApiService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import android.content.SharedPreferences
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.flow
 import java.util.Date
 
-// DataStore per salvare le preferenze
-val Context.dataStore by preferencesDataStore(name = "user_preferences")
-
-class GameRepository(
-    private val dao: GameDao,
-    private val context: Context
-) {
+class GameRepository(private val context: Context) {
 
     companion object {
-        // API service sarà inizializzato dall'Application Class
-        lateinit var steamApiService: SteamApiService
+        // Per Steam API (configura dopo)
+        // lateinit var steamApiService: SteamApiService
     }
 
-    private val ioScope = CoroutineScope(Dispatchers.IO)
+    private val prefs: SharedPreferences by lazy {
+        context.getSharedPreferences("theplaybook_prefs", Context.MODE_PRIVATE)
+    }
 
     // Preferenze utente
-    private val steamIdKey = stringPreferencesKey("steam_id")
-    private val steamNameKey = stringPreferencesKey("steam_name")
+    private val STEAM_ID_KEY = "steam_id"
+    private val STEAM_NAME_KEY = "steam_name"
+    private val USER_ID_KEY = "user_id"
 
-    // Salva Steam ID dell'utente
-    suspend fun saveSteamUser(steamId: String, steamName: String) {
-        context.dataStore.edit { preferences ->
-            preferences[steamIdKey] = steamId
-            preferences[steamNameKey] = steamName
-        }
+    // Salva Steam ID
+    fun saveSteamUser(steamId: String, steamName: String) {
+        prefs.edit()
+            .putString(STEAM_ID_KEY, steamId)
+            .putString(STEAM_NAME_KEY, steamName)
+            .apply()
     }
 
     // Ottieni Steam ID salvato
-    suspend fun getSavedSteamId(): String? {
-        return context.dataStore.data.first()[steamIdKey]
+    fun getSavedSteamId(): String? {
+        return prefs.getString(STEAM_ID_KEY, null)
     }
 
-    suspend fun getSavedSteamName(): String? {
-        return context.dataStore.data.first()[steamNameKey]
+    fun getSavedSteamName(): String? {
+        return prefs.getString(STEAM_NAME_KEY, null)
     }
 
-    // Sincronizza dati da Steam
-    suspend fun syncUserData(steamId: String): Result<DashboardData> {
-        return try {
-            withContext(Dispatchers.IO) {
-                // 1. Ottieni profilo utente
-                val profileResponse = steamApiService.getPlayerSummaries(steamId)
-                val player = profileResponse.response.players.firstOrNull()
-
-                if (player == null) {
-                    return@withContext Result.failure(Exception("Profilo non trovato"))
-                }
-
-                // Salva nome utente
-                saveSteamUser(steamId, player.personaName)
-
-                // 2. Ottieni giochi posseduti
-                val gamesResponse = steamApiService.getOwnedGames(steamId)
-                val steamGames = gamesResponse.response.games
-
-                // 3. Converti e salva giochi localmente
-                val gameEntities = steamGames.map { steamGame ->
-                    GameEntity(
-                        appId = steamGame.appId,
-                        name = steamGame.name,
-                        playtimeForever = steamGame.playtimeForever,
-                        playtime2Weeks = steamGame.playtime2Weeks,
-                        iconUrl = steamGame.imgIconUrl,
-                        logoUrl = steamGame.imgLogoUrl,
-                        hasCommunityVisibleStats = steamGame.hasCommunityVisibleStats,
-                        lastPlayed = steamGame.rtimeLastPlayed
-                    )
-                }
-
-                dao.insertGames(gameEntities)
-
-                // 4. Per ogni gioco con statistiche, ottieni achievement
-                val gamesWithStats = gameEntities.filter { it.hasCommunityVisibleStats }
-
-                gamesWithStats.take(5).forEach { game -> // Limita a 5 giochi per performance
-                    try {
-                        val achievementsResponse = steamApiService.getPlayerAchievements(
-                            steamId,
-                            game.appId
-                        )
-
-                        if (achievementsResponse.response.playerStats.success) {
-                            val achievements = achievementsResponse.response.playerStats.achievements
-
-                            achievements?.let { steamAchievements ->
-                                val achievementEntities = steamAchievements.map { steamAchievement ->
-                                    AchievementEntity(
-                                        apiName = steamAchievement.apiName,
-                                        gameId = game.appId,
-                                        name = steamAchievement.name,
-                                        description = steamAchievement.description,
-                                        iconUrl = "", // Da implementare se necessario
-                                        iconGrayUrl = "",
-                                        achieved = steamAchievement.achieved == 1,
-                                        unlockTime = steamAchievement.unlockTime,
-                                        globalPercentage = 0f // Da implementare con API globale
-                                    )
-                                }
-
-                                dao.insertAchievements(achievementEntities)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        // Ignora errori per singolo gioco
-                        e.printStackTrace()
-                    }
-                }
-
-                // 5. Calcola statistiche dashboard
-                val stats = dao.getDashboardStats()
-                val recentGames = dao.getRecentGames(5).first()
-
-                val dashboardData = DashboardData(
-                    steamId = steamId,
-                    steamName = player.personaName,
-                    avatarUrl = player.avatarFull,
-                    totalPlaytimeHours = (stats?.totalPlaytime ?: 0) / 60f,
-                    totalGames = stats?.totalGames ?: 0,
-                    completionRate = stats?.avgCompletion ?: 0f,
-                    recentGames = recentGames,
-                    lastUpdated = Date()
-                )
-
-                Result.success(dashboardData)
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
+    // Crea/ottieni user ID locale
+    fun getOrCreateUserId(): String {
+        var userId = prefs.getString(USER_ID_KEY, null)
+        if (userId == null) {
+            userId = "user_${System.currentTimeMillis()}"
+            prefs.edit().putString(USER_ID_KEY, userId).apply()
         }
+        return userId
     }
 
-    // Ottieni dati dalla cache locale
-    suspend fun getCachedDashboardData(): DashboardData? {
-        return try {
-            val steamId = getSavedSteamId()
-            val steamName = getSavedSteamName()
-
-            if (steamId == null || steamName == null) {
-                return null
-            }
-
-            val stats = dao.getDashboardStats()
-            val recentGames = dao.getRecentGames(5).first()
-
-            DashboardData(
-                steamId = steamId,
-                steamName = steamName,
-                avatarUrl = "",
-                totalPlaytimeHours = (stats?.totalPlaytime ?: 0) / 60f,
-                totalGames = stats?.totalGames ?: 0,
-                completionRate = stats?.avgCompletion ?: 0f,
-                recentGames = recentGames,
-                lastUpdated = Date()
-            )
-        } catch (e: Exception) {
-            null
-        }
+    // Dati demo per testing
+    suspend fun getMockDashboardData(): DashboardData {
+        return DashboardData(
+            steamId = getSavedSteamId() ?: "76561197960287930",
+            steamName = getSavedSteamName() ?: "Demo Player",
+            avatarUrl = "",
+            totalPlaytimeHours = 342.5f,
+            totalGames = 67,
+            completionRate = 78.3f,
+            recentGames = getMockGames(),
+            lastUpdated = Date()
+        )
     }
 
-    // Flusso di giochi recenti
-    fun getRecentGamesFlow(limit: Int = 5): Flow<List<GameEntity>> {
-        return dao.getRecentGames(limit)
-    }
-
-    // Flusso di achievement per gioco
-    fun getAchievementsForGame(gameId: Long): Flow<List<AchievementEntity>> {
-        return dao.getAchievementsForGame(gameId)
-    }
-
-    // Ottieni achievement quasi completati
-    fun getNearlyCompletedAchievements(gameId: Long): Flow<List<AchievementEntity>> {
-        return dao.getNearlyCompletedAchievements(gameId)
+    private fun getMockGames(): List<MockGame> {
+        return listOf(
+            MockGame("Counter-Strike 2", 1250, 65.0f),
+            MockGame("Dota 2", 890, 42.0f),
+            MockGame("Grand Theft Auto V", 156, 23.0f),
+            MockGame("Cyberpunk 2077", 89, 45.0f),
+            MockGame("Elden Ring", 234, 78.0f)
+        )
     }
 
     // Cancella tutti i dati
-    suspend fun clearAllData() {
-        dao.deleteAllGames()
-        context.dataStore.edit { preferences ->
-            preferences.clear()
-        }
+    fun clearAllData() {
+        prefs.edit().clear().apply()
+    }
+
+    // Flusso di dati demo (per LiveData)
+    fun getDashboardDataFlow(): Flow<DashboardData> = flow {
+        emit(getMockDashboardData())
     }
 }
 
-// Modello per dati dashboard
+// Modelli semplici (senza Room annotations)
 data class DashboardData(
     val steamId: String,
     val steamName: String,
@@ -205,6 +92,12 @@ data class DashboardData(
     val totalPlaytimeHours: Float,
     val totalGames: Int,
     val completionRate: Float,
-    val recentGames: List<GameEntity>,
+    val recentGames: List<MockGame>,
     val lastUpdated: Date
+)
+
+data class MockGame(
+    val name: String,
+    val playtimeMinutes: Int,
+    val completionPercentage: Float
 )

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Tema scuro (base) -->
+
+    <!-- Tema scuro principale -->
     <style name="Theme.ThePlayBook" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -21,6 +22,22 @@
         <item name="cardViewStyle">@style/Widget.ThePlayBook.CardView</item>
     </style>
 
+    <!-- Tema senza ActionBar -->
+    <style name="Theme.ThePlayBook.NoActionBar" parent="Theme.ThePlayBook">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Tema trasparente per SteamAuthActivity -->
+    <style name="Theme.ThePlayBook.Transparent" parent="Theme.ThePlayBook.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
     <!-- Stile per bottoni -->
     <style name="Widget.ThePlayBook.Button" parent="Widget.MaterialComponents.Button">
         <item name="cornerRadius">8dp</item>
@@ -33,9 +50,4 @@
         <item name="cardUseCompatPadding">true</item>
     </style>
 
-    <!-- Tema senza ActionBar per Login -->
-    <style name="Theme.ThePlayBook.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
 </resources>

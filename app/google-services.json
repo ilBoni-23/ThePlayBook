@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "373546435198",
+    "project_id": "theplaybook-7593d",
+    "storage_bucket": "theplaybook-7593d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373546435198:android:490fcd6eb1547f08108e2f",
+        "android_client_info": {
+          "package_name": "com.example.theplaybook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8dnShH1MmR1lNxHZ56jY3ffQEavAkEeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

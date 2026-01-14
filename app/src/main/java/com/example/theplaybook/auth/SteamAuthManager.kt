@@ -1,71 +1,45 @@
 package com.example.theplaybook.auth
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.OAuthProvider
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.delay
 
 class SteamAuthManager(private val context: Context) {
 
-    private val auth = FirebaseAuth.getInstance()
-
-    companion object {
-        const val STEAM_PROVIDER_ID = "oidc.steam"
-        const val STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
-    }
-
+    // Versione mock semplice per testing
     suspend fun signInWithSteam(): Result<String> {
         return try {
-            val provider = OAuthProvider.newBuilder(STEAM_PROVIDER_ID)
+            // Simula ritardo di rete
+            delay(1500)
 
-            // Configura parametri OpenID per Steam
-            provider.setCustomParameters(mapOf(
-                "openid.ns" to "http://specs.openid.net/auth/2.0",
-                "openid.mode" to "checkid_setup",
-                "openid.return_to" to "https://theplaybook.app/auth/callback",
-                "openid.realm" to "https://theplaybook.app",
-                "openid.identity" to "http://specs.openid.net/auth/2.0/identifier_select",
-                "openid.claimed_id" to "http://specs.openid.net/auth/2.0/identifier_select"
-            ))
+            // Genera Steam ID fittizio
+            val steamId = "7656119${(80000000..99999999).random()}"
+            val steamName = "Player${(1000..9999).random()}"
 
-            // Avvia il processo di autenticazione
-            val result = auth.signInWithProvider(provider.build()).await()
+            // Salva nei preferences
+            val prefs = context.getSharedPreferences("theplaybook_prefs", Context.MODE_PRIVATE)
+            prefs.edit()
+                .putString("steam_id", steamId)
+                .putString("steam_name", steamName)
+                .apply()
 
-            // Estrai Steam ID dal provider data
-            val steamId = extractSteamIdFromUser(result.user)
-
-            if (steamId != null) {
-                Result.success(steamId)
-            } else {
-                Result.failure(Exception("Impossibile ottenere Steam ID"))
-            }
-
+            Result.success(steamId)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    private fun extractSteamIdFromUser(user: com.google.firebase.auth.FirebaseUser?): String? {
-        // Steam ID è spesso nell'UID o nei provider data
-        val uid = user?.uid ?: return null
-
-        // Estrai Steam ID dall'UID (formato: steam:STEAM_ID)
-        return if (uid.startsWith("steam:")) {
-            uid.substring(6)
-        } else {
-            uid
-        }
-    }
-
-    fun getCurrentUser() = auth.currentUser
+    fun getCurrentUser() = null
 
     suspend fun signOut() {
-        auth.signOut()
+        val prefs = context.getSharedPreferences("theplaybook_prefs", Context.MODE_PRIVATE)
+        prefs.edit()
+            .remove("steam_id")
+            .remove("steam_name")
+            .apply()
     }
 
     fun isUserLoggedIn(): Boolean {
-        return auth.currentUser != null
+        val prefs = context.getSharedPreferences("theplaybook_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("steam_id", null) != null
     }
 }
