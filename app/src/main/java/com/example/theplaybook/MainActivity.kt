@@ -1,5 +1,6 @@
 package com.example.theplaybook
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.theplaybook.ui.dashboard.DashboardActivity  // ← Aggiungi questo import
 
 class MainActivity : AppCompatActivity() {
 
@@ -70,17 +72,27 @@ class MainActivity : AppCompatActivity() {
                         val result = authManager.signInWithSteam()
 
                         if (result.isSuccess) {
-                            statusText.text = "✅ Login riuscito!\nSteam ID: ${result.getOrNull()}"
+                            val steamId = result.getOrNull() ?: ""
+                            statusText.text = "✅ Login riuscito!\nSteam ID: $steamId"
                             text = "Accesso effettuato"
                             setBackgroundColor(Color.parseColor("#4CAF50"))
+
+                            // AGGIUNGI QUI: Apri DashboardActivity
+                            val intent = Intent(this@MainActivity, DashboardActivity::class.java)
+                            intent.putExtra("STEAM_ID", steamId)
+                            startActivity(intent)
+                            // finish() // Opzionale: chiudi MainActivity dopo login
+
                         } else {
                             statusText.text = "❌ Login fallito"
                             text = "Riprova"
+                            setBackgroundColor(Color.parseColor("#171A21"))
                             isEnabled = true
                         }
                     } catch (e: Exception) {
                         statusText.text = "Errore: ${e.message}"
                         text = "Riprova"
+                        setBackgroundColor(Color.parseColor("#171A21"))
                         isEnabled = true
                     }
                 }
@@ -99,6 +111,11 @@ class MainActivity : AppCompatActivity() {
                 steamBtn.text = "Simula Login Steam"
                 steamBtn.setBackgroundColor(Color.parseColor("#171A21"))
                 steamBtn.isEnabled = true
+
+                // AGGIUNGI QUI: Apri DashboardActivity in modalità demo
+                val intent = Intent(this@MainActivity, DashboardActivity::class.java)
+                // Non passare STEAM_ID, così userà MockPlayer.PLAYER_1.steamId
+                startActivity(intent)
             }
         }
 

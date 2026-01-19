@@ -1,13 +1,20 @@
 package com.example.theplaybook.ui.dashboard
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import com.example.theplaybook.MainActivity
 import com.example.theplaybook.databinding.ActivityDashboardBinding
 import com.example.theplaybook.data.mock.MockPlayer
+import com.example.theplaybook.ui.dashboard.adapters.DashboardPagerAdapter
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
@@ -23,10 +30,28 @@ class DashboardActivity : AppCompatActivity() {
 
         setupUI()
         setupObservers()
+        setupViewPager()
         viewModel.loadDashboardData(steamId)
     }
 
     private fun setupUI() {
+        // Toolbar menu
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.menu_logout -> {
+                    logout()
+                    true
+                }
+                R.id.menu_refresh -> {
+                    val steamId = intent.getStringExtra("STEAM_ID")
+                        ?: MockPlayer.PLAYER_1.steamId
+                    viewModel.loadDashboardData(steamId)
+                    true
+                }
+                else -> false
+            }
+        }
+
         binding.switchMockMode.setOnCheckedChangeListener { _, isChecked ->
             viewModel.toggleMockMode(isChecked)
             Snackbar.make(binding.root,
@@ -38,12 +63,21 @@ class DashboardActivity : AppCompatActivity() {
                 ?: MockPlayer.PLAYER_1.steamId
             viewModel.loadDashboardData(steamId)
         }
+    }
 
-        binding.btnRefresh.setOnClickListener {
-            val steamId = intent.getStringExtra("STEAM_ID")
-                ?: MockPlayer.PLAYER_1.steamId
-            viewModel.loadDashboardData(steamId)
-        }
+    private fun setupViewPager() {
+        val adapter = DashboardPagerAdapter(this)
+        binding.viewPager.adapter = adapter
+
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = when (position) {
+                0 -> "Overview"
+                1 -> "Games"
+                2 -> "Achievements"
+                3 -> "Stats"
+                else -> "Tab $position"
+            }
+        }.attach()
     }
 
     private fun setupObservers() {
@@ -52,7 +86,7 @@ class DashboardActivity : AppCompatActivity() {
                 is DashboardUiState.Loading -> showLoading(true)
                 is DashboardUiState.Success -> {
                     showLoading(false)
-                    updateUI(state.data)
+                    updateToolbar(state.data)
                 }
                 is DashboardUiState.Error -> {
                     showLoading(false)
@@ -69,44 +103,24 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun showLoading(show: Boolean) {
         binding.progressBar.isVisible = show
-        binding.contentGroup.isVisible = !show
     }
 
-    private fun updateUI(data: DashboardData) {
+    private fun updateToolbar(data: DashboardData) {
         binding.tvPlayerName.text = data.playerName
-        binding.tvTotalHours.text = "%.1f h".format(data.totalPlaytimeHours)
-        binding.tvTotalGames.text = data.totalGames.toString()
-
-        // Mock indicator
         if (data.isMockData) {
-            binding.tvMockIndicator.text = "🎮 Dati Mock"
-            binding.tvMockIndicator.isVisible = true
-        }
-
-        // Mostra giochi recenti
-        updateRecentGames(data.recentGames)
-
-        // Mostra achievement quasi completati
-        updateNearlyCompleted(data.nearlyCompletedAchievements)
-    }
-
-    private fun updateRecentGames(games: List<SteamGame>) {
-        binding.tvRecentGames.text = if (games.isEmpty()) {
-            "Nessun gioco recente"
-        } else {
-            games.joinToString("\n") { game ->
-                "• ${game.name} (${game.playtimeForever / 60}h)"
-            }
+            binding.toolbar.title = "ThePlayBook 🎮 (Mock)"
         }
     }
 
-    private fun updateNearlyCompleted(achievements: List<SteamAchievement>) {
-        binding.tvNearlyComplete.text = if (achievements.isEmpty()) {
-            "Nessun achievement quasi completato"
-        } else {
-            achievements.joinToString("\n") { achievement ->
-                "🎯 ${achievement.name} (${achievement.description ?: "Nessuna descrizione"})"
-            }
+    private fun logout() {
+        CoroutineScope(Dispatchers.Main).launch {
+            val authManager = com.example.theplaybook.auth.SteamAuthManager(this@DashboardActivity)
+            authManager.signOut()
         }
+
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 }

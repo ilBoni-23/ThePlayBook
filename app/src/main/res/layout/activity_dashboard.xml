@@ -249,6 +249,15 @@
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="32dp" />
 
+            <Button
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="🔙 Logout"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#171A21"
+                android:layout_marginTop="16dp" />
+
             <!-- Bottone refresh -->
             <Button
                 android:id="@+id/btnRefresh"
