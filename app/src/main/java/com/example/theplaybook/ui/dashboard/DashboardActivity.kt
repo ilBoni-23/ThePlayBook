@@ -1,98 +1,112 @@
 package com.example.theplaybook.ui.dashboard
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.example.theplaybook.ThePlayBookApp
+import androidx.core.view.isVisible
 import com.example.theplaybook.databinding.ActivityDashboardBinding
-import com.example.theplaybook.ui.login.LoginActivity
-import kotlinx.coroutines.launch
+import com.example.theplaybook.data.mock.MockPlayer
+import com.google.android.material.snackbar.Snackbar
 
 class DashboardActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityDashboardBinding
     private val viewModel: DashboardViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDashboardBinding.inflate(layoutInflater) // Questo carica activity_dashboard.xml
+        binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupToolbar()
+        val steamId = intent.getStringExtra("STEAM_ID")
+            ?: MockPlayer.PLAYER_1.steamId
+
+        setupUI()
         setupObservers()
-        loadData()
+        viewModel.loadDashboardData(steamId)
     }
 
-    private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "ThePlayBook"
+    private fun setupUI() {
+        binding.switchMockMode.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.toggleMockMode(isChecked)
+            Snackbar.make(binding.root,
+                if (isChecked) "Modalità Mock attiva" else "Modalità Mock disattiva",
+                Snackbar.LENGTH_SHORT
+            ).show()
 
-        binding.toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                android.R.id.home -> {
-                    // Menu laterale
-                    true
-                }
-                else -> false
-            }
+            val steamId = intent.getStringExtra("STEAM_ID")
+                ?: MockPlayer.PLAYER_1.steamId
+            viewModel.loadDashboardData(steamId)
+        }
+
+        binding.btnRefresh.setOnClickListener {
+            val steamId = intent.getStringExtra("STEAM_ID")
+                ?: MockPlayer.PLAYER_1.steamId
+            viewModel.loadDashboardData(steamId)
         }
     }
 
     private fun setupObservers() {
-        viewModel.dashboardState.observe(this) { state ->
+        viewModel.uiState.observe(this) { state ->
             when (state) {
-                is DashboardState.Loading -> {
-                    showLoading(true)
-                }
-
-                is DashboardState.Success -> {
+                is DashboardUiState.Loading -> showLoading(true)
+                is DashboardUiState.Success -> {
                     showLoading(false)
                     updateUI(state.data)
                 }
-
-                is DashboardState.Error -> {
+                is DashboardUiState.Error -> {
                     showLoading(false)
                     Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
                 }
-
-                is DashboardState.Logout -> {
-                    // Torna al login
-                    startActivity(Intent(this, LoginActivity::class.java))
-                    finish()
-                }
             }
         }
-    }
 
-    private fun loadData() {
-        lifecycleScope.launch {
-            viewModel.loadDashboardData()
+        viewModel.isMockMode.observe(this) { isMock ->
+            binding.tvMockIndicator.isVisible = isMock
+            binding.switchMockMode.isChecked = isMock
         }
     }
 
     private fun showLoading(show: Boolean) {
-        binding.progressBar.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
+        binding.progressBar.isVisible = show
+        binding.contentGroup.isVisible = !show
     }
 
     private fun updateUI(data: DashboardData) {
-        binding.tvSteamName.text = data.steamName
-        binding.tvTotalHours.text = String.format("%.1f h", data.totalPlaytimeHours)
+        binding.tvPlayerName.text = data.playerName
+        binding.tvTotalHours.text = "%.1f h".format(data.totalPlaytimeHours)
         binding.tvTotalGames.text = data.totalGames.toString()
-        binding.tvCompletionRate.text = String.format("%.1f%%", data.completionRate)
 
-        // Aggiorna progress bar
-        binding.completionProgress.progress = data.completionRate.toInt()
+        // Mock indicator
+        if (data.isMockData) {
+            binding.tvMockIndicator.text = "🎮 Dati Mock"
+            binding.tvMockIndicator.isVisible = true
+        }
 
-        // Carica avatar con Glide se disponibile
-        if (data.avatarUrl.isNotEmpty()) {
-            // Glide.with(this).load(data.avatarUrl).into(binding.ivAvatar)
+        // Mostra giochi recenti
+        updateRecentGames(data.recentGames)
+
+        // Mostra achievement quasi completati
+        updateNearlyCompleted(data.nearlyCompletedAchievements)
+    }
+
+    private fun updateRecentGames(games: List<SteamGame>) {
+        binding.tvRecentGames.text = if (games.isEmpty()) {
+            "Nessun gioco recente"
+        } else {
+            games.joinToString("\n") { game ->
+                "• ${game.name} (${game.playtimeForever / 60}h)"
+            }
         }
     }
 
-    private fun logout() {
-        viewModel.logout()
+    private fun updateNearlyCompleted(achievements: List<SteamAchievement>) {
+        binding.tvNearlyComplete.text = if (achievements.isEmpty()) {
+            "Nessun achievement quasi completato"
+        } else {
+            achievements.joinToString("\n") { achievement ->
+                "🎯 ${achievement.name} (${achievement.description ?: "Nessuna descrizione"})"
+            }
+        }
     }
 }

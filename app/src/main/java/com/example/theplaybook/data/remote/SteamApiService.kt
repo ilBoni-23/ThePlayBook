@@ -8,25 +8,25 @@ interface SteamApiService {
 
     @GET("IPlayerService/GetOwnedGames/v1/")
     suspend fun getOwnedGames(
-        @Query("steamid") steamId: String,
-        @Query("include_appinfo") includeAppInfo: Int = 1,
-        @Query("include_played_free_games") includeFreeGames: Int = 1
+        @Query("steamid") steamid: String,
+        @Query("include_appinfo") include_appinfo: Int = 1,
+        @Query("include_played_free_games") include_played_free_games: Int = 1
     ): SteamResponse<OwnedGamesResponse>
 
     @GET("ISteamUser/GetPlayerSummaries/v2/")
     suspend fun getPlayerSummaries(
-        @Query("steamids") steamIds: String
+        @Query("steamids") steamids: String
     ): SteamResponse<PlayerSummariesResponse>
 
     @GET("ISteamUserStats/GetPlayerAchievements/v1/")
     suspend fun getPlayerAchievements(
-        @Query("steamid") steamId: String,
-        @Query("appid") appId: Long
+        @Query("steamid") steamid: String,
+        @Query("appid") appid: Long
     ): SteamResponse<PlayerAchievementsResponse>
 
     @GET("ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/")
     suspend fun getGlobalAchievementPercentages(
-        @Query("gameid") gameId: Long
+        @Query("gameid") gameid: Long
     ): SteamResponse<GlobalAchievementPercentagesResponse>
 }
 

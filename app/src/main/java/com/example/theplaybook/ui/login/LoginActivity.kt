@@ -1,4 +1,4 @@
-package com.example.theplaybook.ui.login
+/*package com.example.theplaybook.ui.login
 
 import android.content.Intent
 import android.os.Bundle
@@ -38,4 +38,4 @@ class LoginActivity : AppCompatActivity() {
             viewModel.startDemoMode()
         }
     }
-}
+}*/

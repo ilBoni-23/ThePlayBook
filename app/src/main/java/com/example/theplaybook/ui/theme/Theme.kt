@@ -1,4 +1,4 @@
-package com.example.theplaybook.ui.theme
+/*package com.example.theplaybook.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -55,4 +55,4 @@ fun ThePlayBookTheme(
         typography = Typography,
         content = content
     )
-}
+}*/

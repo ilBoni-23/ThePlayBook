@@ -1,8 +1,7 @@
-package com.example.theplaybook.ui.login
+/*package com.example.theplaybook.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.theplaybook.auth.steam.SteamAuthHelper
 import com.example.theplaybook.repository.GameRepository
 import kotlinx.coroutines.launch
 
@@ -62,4 +61,4 @@ class LoginViewModel(
         )
         _loginState.value = LoginState.DemoMode(demoData)
     }
-}
+}*/

@@ -3,35 +3,32 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark"
-    tools:context=".ui.dashboard.DashboardActivity">
+    android:padding="16dp"
+    android:background="#0F0F13">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_constraintStart_toStartOf="parent"
+    <!-- Progress Bar (centrale) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:background="@color/surface_dark"
-        app:title="@string/app_name"
-        app:titleTextColor="@color/white"
-        app:navigationIcon="@drawable/ic_menu"
-        app:menu="@menu/menu_dashboard"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Contenitore principale scorrevole -->
+    <!-- Contenuto principale (visibile quando non in loading) -->
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
-        android:layout_width="0dp"
+        android:id="@+id/contentGroup"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -39,262 +36,231 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Profilo utente -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Header con avatar e nome -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@color/surface_dark"
-                app:cardCornerRadius="12dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="24dp">
+
+                <ImageView
+                    android:id="@+id/ivAvatar"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_steam"
+                    android:layout_marginEnd="16dp" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                    <!-- Avatar -->
-                    <ImageView
-                        android:id="@+id/ivAvatar"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_default_avatar"
-                        android:layout_marginEnd="16dp"
-                        android:contentDescription="@string/user_avatar"/>
-
-                    <!-- Info utente -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:id="@+id/tvPlayerName"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="Player Name"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/tvSteamName"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Loading..."
-                            android:textColor="@color/white"
-                            android:textSize="18sp"
-                            android:textStyle="bold"/>
+                    <TextView
+                        android:id="@+id/tvMockIndicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎮 Dati Mock"
+                        android:textColor="#FF6A00"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        android:layout_marginTop="4dp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/steam_profile"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp"/>
-                    </LinearLayout>
-
-                    <!-- Icona Steam -->
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_steam_small"
-                        android:tint="@color/steam_blue"
-                        android:contentDescription="@string/steam_icon"/>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+                <!-- Switch Mock Mode -->
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchMockMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mock"
+                    android:textColor="#8C8C8C" />
+
+            </LinearLayout>
 
             <!-- Statistiche principali -->
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@color/surface_dark"
-                app:cardCornerRadius="12dp">
+                android:orientation="horizontal"
+                android:layout_marginBottom="32dp"
+                android:gravity="center">
 
+                <!-- Ore totali -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:gravity="center">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/total_statistics"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="16dp"/>
+                        android:text="🎮"
+                        android:textSize="24sp"
+                        android:layout_marginBottom="8dp" />
 
-                    <!-- Grid per statistiche -->
-                    <GridLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/tvTotalHours"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:columnCount="2"
-                        android:rowCount="2"
-                        android:alignmentMode="alignBounds"
-                        android:columnOrderPreserved="false">
-
-                        <!-- Ore totali -->
-                        <TextView
-                            android:id="@+id/tvTotalHours"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_columnWeight="1"
-                            android:text="0h"
-                            android:textSize="28sp"
-                            android:textColor="@color/primary"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-
-                        <!-- Giochi totali -->
-                        <TextView
-                            android:id="@+id/tvTotalGames"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_columnWeight="1"
-                            android:text="0"
-                            android:textSize="28sp"
-                            android:textColor="@color/primary"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-
-                        <!-- Etichetta ore -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/total_hours"
-                            android:textColor="@color/text_secondary"
-                            android:gravity="center"/>
-
-                        <!-- Etichetta giochi -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/total_games"
-                            android:textColor="@color/text_secondary"
-                            android:gravity="center"/>
-                    </GridLayout>
-
-                    <!-- Progress bar completamento -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="16dp"
-                        android:gravity="center_vertical">
-
-                        <ProgressBar
-                            android:id="@+id/completionProgress"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="0dp"
-                            android:layout_height="8dp"
-                            android:layout_weight="1"
-                            android:progress="0"
-                            android:max="100"
-                            android:progressTint="@color/primary"
-                            android:progressBackgroundTint="@color/surface_light"/>
-
-                        <TextView
-                            android:id="@+id/tvCompletionRate"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:text="0%"
-                            android:textColor="@color/white"
-                            android:textSize="14sp"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Giochi Recenti -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/surface_dark"
-                app:cardCornerRadius="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                        android:text="0.0"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/recent_games"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp"/>
+                        android:text="Ore totali"
+                        android:textColor="#8C8C8C"
+                        android:textSize="12sp" />
 
-                    <!-- Placeholder per RecyclerView -->
-                    <TextView
-                        android:id="@+id/tvNoRecentGames"
-                        android:layout_width="match_parent"
-                        android:layout_height="120dp"
-                        android:text="@string/no_recent_games"
-                        android:textColor="@color/text_secondary"
-                        android:gravity="center"
-                        android:visibility="visible"/>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvRecentGames"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:visibility="gone"
-                        android:clipToPadding="false"
-                        android:paddingEnd="8dp"/>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Obiettivi Quasi Completati -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/surface_dark"
-                app:cardCornerRadius="12dp">
+                <!-- Separatore -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="40dp"
+                    android:background="#2C2C34" />
 
+                <!-- Giochi totali -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:gravity="center">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/nearly_completed"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp"/>
+                        android:text="📊"
+                        android:textSize="24sp"
+                        android:layout_marginBottom="8dp" />
 
                     <TextView
-                        android:id="@+id/tvNoNearAchievements"
-                        android:layout_width="match_parent"
+                        android:id="@+id/tvTotalGames"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/no_nearly_completed"
-                        android:textColor="@color/text_secondary"
-                        android:gravity="center"
-                        android:padding="24dp"
-                        android:visibility="visible"/>
+                        android:text="0"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvNearlyComplete"
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:visibility="gone"/>
+                        android:text="Giochi"
+                        android:textColor="#8C8C8C"
+                        android:textSize="12sp" />
+
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+                <!-- Separatore -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="40dp"
+                    android:background="#2C2C34" />
+
+                <!-- Achievement -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🏆"
+                        android:textSize="24sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvAchievementRate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Completion"
+                        android:textColor="#8C8C8C"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Giochi recenti -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎮 Giochi recenti"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/tvRecentGames"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nessun gioco recente"
+                android:textColor="#8C8C8C"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="32dp" />
+
+            <!-- Achievement quasi completati -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎯 Achievement quasi completati"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/tvNearlyComplete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nessun achievement quasi completato"
+                android:textColor="#8C8C8C"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="32dp" />
+
+            <!-- Bottone refresh -->
+            <Button
+                android:id="@+id/btnRefresh"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="🔄 Aggiorna dati"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#FF6A00"
+                android:layout_marginTop="16dp" />
+
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Progress bar centrale -->
-    <ProgressBar
-        android:id="@+id/loadingProgress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
