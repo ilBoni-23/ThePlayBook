@@ -1,20 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.theplaybook">
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permessi -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Caratteristiche hardware opzionali -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <!-- Supporto per schermi di diverse dimensioni -->
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
+
     <application
+        android:name=".ThePlayBookApp"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="ThePlayBook"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ThePlayBook"
-        android:usesCleartextTraffic="true">
+        tools:targetApi="31">
 
-        <!-- Schermata di login principale -->
+        <!-- Main Activity (Login) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -25,16 +42,64 @@
             </intent-filter>
         </activity>
 
-        <!-- Dashboard principale -->
+        <!-- Dashboard -->
         <activity
             android:name=".ui.dashboard.DashboardActivity"
             android:exported="false"
             android:theme="@style/Theme.ThePlayBook.NoActionBar" />
 
-        <!-- Applicazione personalizzata -->
-        <meta-data
-            android:name="com.example.theplaybook.ThePlayBookApp"
-            android:value="true" />
+        <!-- Giochi -->
+        <activity
+            android:name=".ui.giochi.GiochiActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
+
+        <!-- Amici -->
+        <activity
+            android:name=".ui.amici.AmiciActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
+
+        <!-- Calendario -->
+        <activity
+            android:name=".ui.calendario.CalendarioActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
+
+        <!-- Profilo -->
+        <activity
+            android:name=".ui.profilo.ProfiloActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
+
+        <!-- Gioco Singolo -->
+        <activity
+            android:name=".ui.gioco_singolo.GiocoSingoloActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
+
+        <!-- Trofei -->
+        <activity
+            android:name=".ui.trofei.TrofeiActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
+
+        <!-- Steam Auth Activity (se ne hai una) -->
+        <activity
+            android:name=".auth.SteamAuthActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.Transparent" />
+
+        <!-- Provider (se usi FileProvider) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

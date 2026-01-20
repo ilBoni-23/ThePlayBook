@@ -3,6 +3,7 @@ package com.example.theplaybook.ui.dashboard.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -15,19 +16,24 @@ class GamesAdapter : ListAdapter<SteamGame, GamesAdapter.GameViewHolder>(GameDif
     class GameViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvGameName: TextView = itemView.findViewById(R.id.tvGameName)
         private val tvPlaytime: TextView = itemView.findViewById(R.id.tvPlaytime)
-        private val tvLastPlayed: TextView = itemView.findViewById(R.id.tvLastPlayed)
+        private val tvGameDescription: TextView = itemView.findViewById(R.id.tvGameDescription)
+        private val ivGameIcon: ImageView = itemView.findViewById(R.id.ivGameIcon)
 
         fun bind(game: SteamGame) {
             tvGameName.text = game.name
             tvPlaytime.text = "Giocato: ${game.playtimeForever / 60}h"
 
-            val lastPlayed = if (game.rtimeLastPlayed != null) {
-                val daysAgo = (System.currentTimeMillis() / 1000 - game.rtimeLastPlayed) / 86400
-                if (daysAgo == 0L) "Oggi" else "$daysAgo giorni fa"
-            } else {
-                "Mai"
+            // Descrizione basata sul tempo di gioco
+            val hours = game.playtimeForever / 60
+            tvGameDescription.text = when {
+                hours > 100 -> "Esperto - ${hours}h totali"
+                hours > 50 -> "Avanzato - ${hours}h totali"
+                hours > 10 -> "Intermedio - ${hours}h totali"
+                else -> "Principiante - ${hours}h totali"
             }
-            tvLastPlayed.text = "Ultimo: $lastPlayed"
+
+            // TODO: Caricare immagine icona quando disponibile
+            // ivGameIcon.setImageURI(game.imgIconUrl)
         }
     }
 

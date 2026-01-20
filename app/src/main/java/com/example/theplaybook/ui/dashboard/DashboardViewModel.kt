@@ -57,6 +57,13 @@ class DashboardViewModel : ViewModel() {
                     }
                 }
 
+                val completionRate = if (games.isNotEmpty() && nearlyCompleted.isNotEmpty()) {
+                    val completed = nearlyCompleted.count { it.achieved == 1 }
+                    (completed.toFloat() / nearlyCompleted.size * 100).coerceAtMost(100f)
+                } else {
+                    0f
+                }
+
                 _uiState.value = DashboardUiState.Success(
                     DashboardData(
                         steamId = steamId,
@@ -66,6 +73,7 @@ class DashboardViewModel : ViewModel() {
                         totalGames = gamesResponse.response.gameCount,
                         recentGames = recentGames,
                         nearlyCompletedAchievements = nearlyCompleted.take(5),
+                        completionRate = completionRate,
                         isMockData = RepositoryFactory.isMockMode()
                     )
                 )
@@ -102,5 +110,6 @@ data class DashboardData(
     val totalGames: Int,
     val recentGames: List<SteamGame>,
     val nearlyCompletedAchievements: List<SteamAchievement>,
+    val completionRate: Float = 0f,
     val isMockData: Boolean
 )

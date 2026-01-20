@@ -20,6 +20,20 @@
     <string name="nearly_completed">Obiettivi Quasi Completati</string>
     <string name="mock_mode">Modalità Mock</string>
     <string name="loading">Caricamento...</string>
+    <string name="search_friend">Cerca amico...</string>
+    <string name="search_follower">Cerca follower...</string>
+    <string name="favorite">Preferiti</string>
+    <string name="message">Messaggio</string>
+    <string name="add_event">Aggiungi Evento</string>
+    <string name="game_description">Descrizione del gioco...</string>
+    <string name="release_date">Data Uscita</string>
+    <string name="publisher">Editore</string>
+    <string name="platforms">Piattaforme</string>
+    <string name="languages">Lingue</string>
+    <string name="genre">Genere</string>
+    <string name="requirements">Requisiti</string>
+    <string name="available_dlc">DLC Disponibili</string>
+    <string name="you_may_also_like">Potrebbe piacerti anche</string>
 
     <!-- Menu -->
     <string name="menu_home">Home</string>
@@ -50,4 +64,36 @@
     <string name="profile_friends">Amici</string>
     <string name="profile_followers">Follower</string>
     <string name="profile_hours">Ore</string>
+
+    <!-- Descrizioni giochi -->
+    <string name="elden_ring_description">Elden Ring è un action RPG in un vasto mondo aperto creato da Hidetaka Miyazaki e George R. R. Martin. Esplora le Terre Intere, combatti contro nemici epici e scopri segreti nascosti in questa avventura senza pari.</string>
+    <string name="cyberpunk_description">Cyberpunk 2077 è un action RPG a mondo aperto ambientato nella metropoli di Night City, dove tutto è permesso e il potere, la bellezione e le modifiche corporee sono tutto ciò che conta.</string>
+
+    <!-- Nuove stringhe per le activity -->
+    <string name="january">Gennaio</string>
+    <string name="february">Febbraio</string>
+    <string name="march">Marzo</string>
+    <string name="april">Aprile</string>
+    <string name="may">Maggio</string>
+    <string name="june">Giugno</string>
+    <string name="july">Luglio</string>
+    <string name="august">Agosto</string>
+    <string name="september">Settembre</string>
+    <string name="october">Ottobre</string>
+    <string name="november">Novembre</string>
+    <string name="december">Dicembre</string>
+
+    <string name="monday">Lunedì</string>
+    <string name="tuesday">Martedì</string>
+    <string name="wednesday">Mercoledì</string>
+    <string name="thursday">Giovedì</string>
+    <string name="friday">Venerdì</string>
+    <string name="saturday">Sabato</string>
+    <string name="sunday">Domenica</string>
+
+    <string name="event_added">Evento aggiunto al calendario</string>
+    <string name="trophy_unlocked">Trofeo sbloccato!</string>
+    <string name="game_added_favorites">Gioco aggiunto ai preferiti</string>
+    <string name="game_removed_favorites">Gioco rimosso dai preferiti</string>
+
 </resources>

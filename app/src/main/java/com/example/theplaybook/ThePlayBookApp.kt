@@ -1,29 +1,22 @@
 package com.example.theplaybook
 
 import android.app.Application
-import android.content.Context
-import com.example.theplaybook.repository.GameRepository
+import com.example.theplaybook.data.RepositoryFactory
 
 class ThePlayBookApp : Application() {
 
     companion object {
+        // Mantieni per avere accesso al context
         lateinit var instance: ThePlayBookApp
             private set
     }
-
-    // Repository accessibile globalmente
-    lateinit var gameRepository: GameRepository
-        private set
 
     override fun onCreate() {
         super.onCreate()
         instance = this
 
-        initializeRepository()
-    }
-
-    private fun initializeRepository() {
-        // Crea repository semplice senza database
-        gameRepository = GameRepository(applicationContext)
+        // Eventuale inizializzazione qui
+        // Esempio: imposta default mode per RepositoryFactory
+        RepositoryFactory.toggleMockMode(true) // O false per API reali
     }
 }

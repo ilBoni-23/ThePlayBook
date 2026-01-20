@@ -40,7 +40,9 @@ class GamesFragment : Fragment() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is com.example.theplaybook.ui.dashboard.DashboardUiState.Success -> {
-                    // Passa tutti i giochi, non solo quelli recenti
+                    // Usa tutti i giochi, non solo quelli recenti
+                    // Nota: Dovrai passare tutti i giochi dalla ViewModel
+                    // Per ora usa i giochi recenti
                     adapter.submitList(state.data.recentGames)
                 }
                 else -> {}
