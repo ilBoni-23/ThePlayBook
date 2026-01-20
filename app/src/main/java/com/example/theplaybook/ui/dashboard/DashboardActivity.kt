@@ -41,13 +41,35 @@ class DashboardActivity : AppCompatActivity() {
     private var lastLoadedTime: Long = 0
     private val CACHE_DURATION = 5 * 60 * 1000 // 5 minuti in millisecondi
 
+    // NUOVA CLASSE PER GIOCO CON CATEGORIA
+    data class GameWithCategory(
+        val game: SteamGame,
+        val category: String,
+        val subcategories: List<String> = emptyList()
+    )
+
     // NUOVA CLASSE PER ACHIEVEMENT CON GIOCO
     data class AchievementWithGame(
         val achievement: SteamAchievement,
         val gameName: String,
         val gameId: Long,
+        val gameCategory: String, // AGGIUNTO: categoria del gioco
         val isCompleted: Boolean
     )
+
+    // NUOVA CLASSE PER STATISTICHE CATEGORIE
+    data class CategoryStats(
+        val category: String,
+        val totalHours: Float,
+        val gameCount: Int,
+        val percentage: Float
+    )
+
+    // Variabili per memorizzare i dati correnti
+    private var currentTotalPlaytimeHours: Float = 0f
+    private var currentTotalGames: Int = 0
+    private var currentCategoryStats: List<CategoryStats> = emptyList()
+    private var currentTopCategory: CategoryStats? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -222,26 +244,36 @@ class DashboardActivity : AppCompatActivity() {
                 // 2. Carica giochi posseduti
                 val gamesData = caricaGiochi(steamId)
 
-                // 3. Calcola statistiche
-                val totalPlaytimeHours = gamesData.games.sumOf { it.playtimeForever } / 60f
+                // 3. Aggiungi categorie ai giochi
+                val gamesWithCategories = aggiungiCategorieAiGiochi(gamesData.games)
+
+                // 4. Calcola statistiche
+                currentTotalPlaytimeHours = gamesData.games.sumOf { it.playtimeForever } / 60f
+                currentTotalGames = gamesData.gameCount
+
                 val recentGames = gamesData.games
                     .filter { it.rtimeLastPlayed != null }
                     .sortedByDescending { it.rtimeLastPlayed }
                     .take(5)
 
-                // 4. Carica achievement per primi 3 giochi CON NOME DEL GIOCO
-                val achievementsWithGames = caricaAchievementsConGioco(steamId, gamesData.games.take(3))
+                // 5. Calcola statistiche per categorie
+                currentCategoryStats = calcolaStatisticheCategorie(gamesWithCategories)
+                currentTopCategory = currentCategoryStats.maxByOrNull { it.totalHours }
 
-                // 5. Calcola completion rate
+                // 6. Carica achievement per primi 3 giochi CON NOME DEL GIOCO E CATEGORIA
+                val achievementsWithGames = caricaAchievementsConGioco(steamId, gamesWithCategories.take(3))
+
+                // 7. Calcola completion rate
                 val completionRate = calcolaCompletionRate(achievementsWithGames)
 
-                // 6. Aggiorna UI
+                // 8. Aggiorna UI
                 aggiornaUICompleta(
                     playerData = playerData,
-                    totalPlaytimeHours = totalPlaytimeHours,
-                    totalGames = gamesData.gameCount,
+                    totalPlaytimeHours = currentTotalPlaytimeHours,
+                    totalGames = currentTotalGames,
                     recentGames = recentGames,
-                    achievementsWithGames = achievementsWithGames.take(5), // Prendi solo i primi 5
+                    gamesWithCategories = gamesWithCategories.take(5), // Mostra primi 5 giochi con categorie
+                    achievementsWithGames = achievementsWithGames.take(5),
                     completionRate = completionRate,
                     demoName = demoName,
                     isMockMode = RepositoryFactory.isMockMode()
@@ -308,17 +340,133 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    // NUOVO METODO: Carica achievement con il nome del gioco
+    // NUOVO METODO: Aggiunge categorie ai giochi basandosi sul nome o altre caratteristiche
+    private fun aggiungiCategorieAiGiochi(games: List<SteamGame>): List<GameWithCategory> {
+        return games.map { game ->
+            val category = determinaCategoria(game.name, game.playtimeForever)
+            val subcategories = determinaSottoCategorie(game.name, category)
+
+            GameWithCategory(
+                game = game,
+                category = category,
+                subcategories = subcategories
+            )
+        }
+    }
+
+    // METODO: Determina la categoria principale del gioco
+    private fun determinaCategoria(gameName: String, playtime: Int): String {
+        val name = gameName.lowercase()
+
+        return when {
+            name.contains("counter-strike") || name.contains("cs") ||
+                    name.contains("call of duty") || name.contains("cod") ||
+                    name.contains("valorant") || name.contains("overwatch") ||
+                    name.contains("apex") || name.contains("rainbow six") -> "FPS"
+
+            name.contains("dota") || name.contains("league of legends") ||
+                    name.contains("lol") || name.contains("smite") ||
+                    name.contains("heroes of the storm") -> "MOBA"
+
+            name.contains("elden ring") || name.contains("dark souls") ||
+                    name.contains("sekiro") || name.contains("bloodborne") ||
+                    name.contains("monster hunter") || name.contains("nioh") -> "Souls-like"
+
+            name.contains("cyberpunk") || name.contains("witcher") ||
+                    name.contains("skyrim") || name.contains("fallout") ||
+                    name.contains("mass effect") || name.contains("dragon age") -> "RPG"
+
+            name.contains("fifa") || name.contains("nba") ||
+                    name.contains("madden") || name.contains("pes") ||
+                    name.contains("football manager") -> "Sport"
+
+            name.contains("minecraft") || name.contains("terraria") ||
+                    name.contains("stardew valley") || name.contains("factorio") -> "Sandbox"
+
+            name.contains("civilization") || name.contains("cities: skylines") ||
+                    name.contains("total war") || name.contains("crusader kings") -> "Strategy"
+
+            name.contains("racing") || name.contains("need for speed") ||
+                    name.contains("forza") || name.contains("gran turismo") -> "Racing"
+
+            name.contains("resident evil") || name.contains("silent hill") ||
+                    name.contains("outlast") || name.contains("amnesia") -> "Horror"
+
+            name.contains("grand theft auto") || name.contains("gta") ||
+                    name.contains("red dead") || name.contains("watch dogs") -> "Open World"
+
+            else -> "Altro"
+        }
+    }
+
+    // METODO: Determina sotto-categorie del gioco
+    private fun determinaSottoCategorie(gameName: String, mainCategory: String): List<String> {
+        val name = gameName.lowercase()
+        val subcategories = mutableListOf<String>()
+
+        // Aggiungi caratteristiche basate sul nome
+        if (name.contains("multiplayer") || name.contains("online")) {
+            subcategories.add("Multiplayer")
+        }
+        if (name.contains("singleplayer") || name.contains("campaign")) {
+            subcategories.add("Singleplayer")
+        }
+        if (name.contains("co-op") || name.contains("coop")) {
+            subcategories.add("Co-op")
+        }
+        if (name.contains("competitive") || name.contains("ranked")) {
+            subcategories.add("Competitive")
+        }
+        if (name.contains("story") || name.contains("narrative")) {
+            subcategories.add("Story-rich")
+        }
+        if (name.contains("open world") || name.contains("exploration")) {
+            subcategories.add("Open World")
+        }
+
+        return subcategories
+    }
+
+    // NUOVO METODO: Calcola statistiche per categorie
+    private fun calcolaStatisticheCategorie(gamesWithCategories: List<GameWithCategory>): List<CategoryStats> {
+        val categoryMap = mutableMapOf<String, MutableList<GameWithCategory>>()
+
+        // Raggruppa giochi per categoria
+        gamesWithCategories.forEach { gameWithCategory ->
+            val category = gameWithCategory.category
+            if (!categoryMap.containsKey(category)) {
+                categoryMap[category] = mutableListOf()
+            }
+            categoryMap[category]?.add(gameWithCategory)
+        }
+
+        // Calcola ore totali per categoria
+        val totalHoursAll = gamesWithCategories.sumOf { it.game.playtimeForever } / 60f
+
+        return categoryMap.map { (category, games) ->
+            val totalHours = games.sumOf { it.game.playtimeForever } / 60f
+            val percentage = if (totalHoursAll > 0) (totalHours / totalHoursAll * 100) else 0f
+
+            CategoryStats(
+                category = category,
+                totalHours = totalHours,
+                gameCount = games.size,
+                percentage = percentage
+            )
+        }.sortedByDescending { it.totalHours }
+    }
+
+    // METODO MODIFICATO: Carica achievement con nome del gioco E categoria
     private suspend fun caricaAchievementsConGioco(
         steamId: String,
-        games: List<SteamGame>
+        gamesWithCategories: List<GameWithCategory>
     ): List<AchievementWithGame> {
         return withContext(Dispatchers.IO) {
             val achievementsWithGames = mutableListOf<AchievementWithGame>()
 
-            games.forEach { game ->
+            gamesWithCategories.forEach { gameWithCategory ->
                 try {
-                    val response = repository.getPlayerAchievements(steamId, game.appId)
+                    val response = repository.getPlayerAchievements(steamId, gameWithCategory.game.appId)
                     response.response.playerStats.achievements?.let { gameAchievements ->
                         // Prendi 2 achievement per gioco (1 completato, 1 da completare)
                         val achievementsToAdd = gameAchievements
@@ -329,8 +477,9 @@ class DashboardActivity : AppCompatActivity() {
                             achievementsWithGames.add(
                                 AchievementWithGame(
                                     achievement = achievement,
-                                    gameName = game.name,
-                                    gameId = game.appId,
+                                    gameName = gameWithCategory.game.name,
+                                    gameId = gameWithCategory.game.appId,
+                                    gameCategory = gameWithCategory.category, // AGGIUNTA CATEGORIA
                                     isCompleted = achievement.achieved == 1
                                 )
                             )
@@ -340,7 +489,11 @@ class DashboardActivity : AppCompatActivity() {
                     // Se non riesci a caricare gli achievement per questo gioco,
                     // aggiungi achievement mock per questo gioco
                     achievementsWithGames.addAll(
-                        createMockAchievementsForGame(game.name, game.appId)
+                        createMockAchievementsForGame(
+                            gameWithCategory.game.name,
+                            gameWithCategory.game.appId,
+                            gameWithCategory.category
+                        )
                     )
                 }
             }
@@ -356,7 +509,7 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun createMockAchievementsForGame(gameName: String, gameId: Long): List<AchievementWithGame> {
+    private fun createMockAchievementsForGame(gameName: String, gameId: Long, category: String): List<AchievementWithGame> {
         return listOf(
             AchievementWithGame(
                 achievement = SteamAchievement(
@@ -368,6 +521,7 @@ class DashboardActivity : AppCompatActivity() {
                 ),
                 gameName = gameName,
                 gameId = gameId,
+                gameCategory = category,
                 isCompleted = false
             ),
             AchievementWithGame(
@@ -380,6 +534,7 @@ class DashboardActivity : AppCompatActivity() {
                 ),
                 gameName = gameName,
                 gameId = gameId,
+                gameCategory = category,
                 isCompleted = true
             )
         )
@@ -397,6 +552,7 @@ class DashboardActivity : AppCompatActivity() {
                 ),
                 gameName = "Counter-Strike 2",
                 gameId = 730,
+                gameCategory = "FPS",
                 isCompleted = false
             ),
             AchievementWithGame(
@@ -409,6 +565,7 @@ class DashboardActivity : AppCompatActivity() {
                 ),
                 gameName = "Counter-Strike 2",
                 gameId = 730,
+                gameCategory = "FPS",
                 isCompleted = true
             ),
             AchievementWithGame(
@@ -421,7 +578,21 @@ class DashboardActivity : AppCompatActivity() {
                 ),
                 gameName = "Elden Ring",
                 gameId = 1245620,
+                gameCategory = "Souls-like",
                 isCompleted = false
+            ),
+            AchievementWithGame(
+                achievement = SteamAchievement(
+                    apiName = "MOCK_CYBERPUNK_1",
+                    achieved = 1,
+                    unlockTime = System.currentTimeMillis() / 1000 - 259200,
+                    name = "Night City Legend",
+                    description = "Completa la storia principale"
+                ),
+                gameName = "Cyberpunk 2077",
+                gameId = 1091500,
+                gameCategory = "RPG",
+                isCompleted = true
             )
         )
     }
@@ -440,13 +611,19 @@ class DashboardActivity : AppCompatActivity() {
         // Usa dati mock completi in caso di fallimento
         val mockPlayer = MockPlayer.PLAYER_1.copy(steamId = steamId)
         val mockGames = MockGames.ALL_GAMES.take(10)
+        val gamesWithCategories = aggiungiCategorieAiGiochi(mockGames)
+        currentCategoryStats = calcolaStatisticheCategorie(gamesWithCategories)
+        currentTopCategory = currentCategoryStats.maxByOrNull { it.totalHours }
+        currentTotalPlaytimeHours = 342.5f
+        currentTotalGames = mockGames.size
         val mockAchievements = createMockAchievements()
 
         aggiornaUICompleta(
             playerData = mockPlayer,
-            totalPlaytimeHours = 342.5f,
-            totalGames = mockGames.size,
+            totalPlaytimeHours = currentTotalPlaytimeHours,
+            totalGames = currentTotalGames,
             recentGames = mockGames.take(5),
+            gamesWithCategories = gamesWithCategories.take(5),
             achievementsWithGames = mockAchievements.take(5),
             completionRate = 65.5f,
             demoName = demoName,
@@ -470,6 +647,7 @@ class DashboardActivity : AppCompatActivity() {
         totalPlaytimeHours: Float,
         totalGames: Int,
         recentGames: List<SteamGame>,
+        gamesWithCategories: List<GameWithCategory>,
         achievementsWithGames: List<AchievementWithGame>,
         completionRate: Float,
         demoName: String?,
@@ -487,13 +665,16 @@ class DashboardActivity : AppCompatActivity() {
         binding.tvTotalGames.text = totalGames.toString()
         binding.tvCompletion.text = "%.1f%%".format(completionRate)
 
-        // 4. Giochi recenti
-        aggiornaGiochiRecenti(recentGames)
+        // 4. Giochi recenti CON CATEGORIE
+        aggiornaGiochiRecentiConCategorie(gamesWithCategories)
 
-        // 5. Achievement quasi completati CON NOME GIOCO
-        aggiornaAchievementConGioco(achievementsWithGames)
+        // 5. Achievement quasi completati CON CATEGORIA GIOCO
+        aggiornaAchievementConGiocoECategoria(achievementsWithGames)
 
-        // 6. Indicatore modalità
+        // 6. Statistiche categorie (mostra in un Toast per ora)
+        mostraStatisticheCategorie()
+
+        // 7. Indicatore modalità
         aggiornaIndicatoreModalita(isMockMode)
     }
 
@@ -507,7 +688,6 @@ class DashboardActivity : AppCompatActivity() {
 
         caricaAvatar(data.avatarUrl)
         aggiornaGiochiRecenti(data.recentGames)
-        // Modifica questa chiamata quando aggiorni il ViewModel
         aggiornaIndicatoreModalita(data.isMockData)
     }
 
@@ -528,6 +708,24 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    // NUOVO METODO: Aggiorna giochi recenti con categorie
+    private fun aggiornaGiochiRecentiConCategorie(gamesWithCategories: List<GameWithCategory>) {
+        binding.tvRecentGames.text = if (gamesWithCategories.isEmpty()) {
+            "Nessun gioco recente"
+        } else {
+            gamesWithCategories.joinToString("\n") { gameWithCategory ->
+                val game = gameWithCategory.game
+                val category = gameWithCategory.category
+                val subcategories = if (gameWithCategory.subcategories.isNotEmpty()) {
+                    " [${gameWithCategory.subcategories.joinToString(", ")}]"
+                } else ""
+
+                "🎮 ${game.name}\n   🏷️ $category$subcategories\n   ⏱️ ${game.playtimeForever / 60}h"
+            }
+        }
+    }
+
+    // Vecchio metodo mantenuto per compatibilità
     private fun aggiornaGiochiRecenti(games: List<SteamGame>) {
         binding.tvRecentGames.text = if (games.isEmpty()) {
             "Nessun gioco recente"
@@ -538,8 +736,8 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    // NUOVO METODO: Aggiorna achievement con nome del gioco
-    private fun aggiornaAchievementConGioco(achievementsWithGames: List<AchievementWithGame>) {
+    // NUOVO METODO: Aggiorna achievement con nome del gioco E categoria
+    private fun aggiornaAchievementConGiocoECategoria(achievementsWithGames: List<AchievementWithGame>) {
         binding.tvNearlyComplete.text = if (achievementsWithGames.isEmpty()) {
             "Nessun achievement in progress"
         } else {
@@ -547,9 +745,10 @@ class DashboardActivity : AppCompatActivity() {
                 val icon = if (achievementWithGame.isCompleted) "✅" else "🎯"
                 val status = if (achievementWithGame.isCompleted) "Completato" else "Da completare"
                 val game = achievementWithGame.gameName
+                val category = achievementWithGame.gameCategory
                 val achievementName = achievementWithGame.achievement.name
 
-                "$icon $achievementName\n   🎮 $game\n   📝 $status"
+                "$icon $achievementName\n   🎮 $game (🏷️ $category)\n   📝 $status"
             }
         }
     }
@@ -564,6 +763,37 @@ class DashboardActivity : AppCompatActivity() {
                 val status = if (achievement.achieved == 1) "Completato" else "Da completare"
                 "$icon ${achievement.name}\n   📝 $status"
             }
+        }
+    }
+
+    // NUOVO METODO: Mostra statistiche categorie in un Toast
+    private fun mostraStatisticheCategorie() {
+        if (currentTopCategory != null) {
+            val statsText = buildString {
+                append("📊 STATISTICHE CATEGORIE\n\n")
+
+                append("🏆 Categoria più giocata:\n")
+                append("   ${currentTopCategory!!.category}\n")
+                append("   ⏱️ ${"%.1f".format(currentTopCategory!!.totalHours)}h (${"%.0f".format(currentTopCategory!!.percentage)}%)\n\n")
+
+                append("Top Categorie:\n")
+                currentCategoryStats.take(3).forEachIndexed { index, stats ->
+                    val medal = when (index) {
+                        0 -> "🥇"
+                        1 -> "🥈"
+                        2 -> "🥉"
+                        else -> "•"
+                    }
+                    append("$medal ${stats.category}: ${"%.1f".format(stats.totalHours)}h (${stats.gameCount} giochi)\n")
+                }
+            }
+
+            // Mostra in un Toast
+            Toast.makeText(
+                this,
+                "Categoria più giocata: ${currentTopCategory!!.category} (${"%.1f".format(currentTopCategory!!.totalHours)}h)",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -604,7 +834,10 @@ object MockGames {
         SteamGame(570, "Dota 2", 890, 42, "icon2", "logo2", true, System.currentTimeMillis()/1000 - 172800),
         SteamGame(271590, "GTA V", 456, 23, "icon3", "logo3", true, System.currentTimeMillis()/1000 - 2592000),
         SteamGame(1245620, "Elden Ring", 234, 78, "icon4", "logo4", true, System.currentTimeMillis()/1000 - 345600),
-        SteamGame(1091500, "Cyberpunk 2077", 189, 45, "icon5", "logo5", true, System.currentTimeMillis()/1000 - 1728000)
+        SteamGame(1091500, "Cyberpunk 2077", 189, 45, "icon5", "logo5", true, System.currentTimeMillis()/1000 - 1728000),
+        SteamGame(1172470, "Apex Legends", 654, 55, "icon6", "logo6", true, System.currentTimeMillis()/1000 - 432000),
+        SteamGame(255710, "Minecraft", 789, 85, "icon7", "logo7", true, System.currentTimeMillis()/1000 - 864000),
+        SteamGame(292030, "The Witcher 3", 345, 95, "icon8", "logo8", true, System.currentTimeMillis()/1000 - 1296000)
     )
 }
 
