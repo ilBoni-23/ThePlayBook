@@ -1,99 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#0F0F13">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.theplaybook">
 
-    <!-- App Bar con logout -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#171A21"
-        app:title="ThePlayBook"
-        app:titleTextColor="#FFFFFF"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-        <TextView
-            android:id="@+id/tvPlayerName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Player Name"
-            android:textColor="#8C8C8C"
-            android:textSize="14sp"
-            android:layout_marginStart="16dp" />
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="ThePlayBook"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ThePlayBook"
+        android:usesCleartextTraffic="true">
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchMockMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mock"
-            android:textColor="#8C8C8C"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp" />
+        <!-- Schermata di login principale -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
-    </com.google.android.material.appbar.MaterialToolbar>
+        <!-- Dashboard principale -->
+        <activity
+            android:name=".ui.dashboard.DashboardActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ThePlayBook.NoActionBar" />
 
-    <!-- TabLayout per navigazione -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#171A21"
-        app:tabTextColor="#8C8C8C"
-        app:tabSelectedTextColor="#FF6A00"
-        app:tabIndicatorColor="#FF6A00"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        <!-- Applicazione personalizzata -->
+        <meta-data
+            android:name="com.example.theplaybook.ThePlayBookApp"
+            android:value="true" />
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Overview" />
+    </application>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Games" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Achievements" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stats" />
-
-    </com.google.android.material.tabs.TabLayout>
-
-    <!-- ViewPager2 per i fragment -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/tabLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Progress Bar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</manifest>

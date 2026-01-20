@@ -6,10 +6,396 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#0F0F13">
+    android:background="@color/dark_background">
 
-    <!-- Progress Bar (centrale) -->
+    <!-- Header con gradient -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        android:orientation="vertical"
+        android:background="@drawable/gradient_header_blue"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Torna indietro e Mock Switch -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <!-- Tasto Indietro -->
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:background="@drawable/button_circle_background"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="@string/back"
+                android:padding="12dp"/>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <!-- Switch Mock Mode -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp"
+                android:background="@drawable/bg_mock_indicator">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mock_mode"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp"/>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchMockMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Nome utente e avatar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvPlayerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Caricamento..."
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvSteamId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Steam ID: -----"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Avatar utente -->
+            <ImageView
+                android:id="@+id/ivAvatar"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_default_avatar"
+                android:contentDescription="@string/user_avatar"
+                android:layout_marginStart="16dp"
+                android:background="@drawable/avatar_border"
+                android:padding="4dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Statistiche principali -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/statsCard"
+        android:layout_width="0dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="-40dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/card_background"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Ore totali -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvTotalHours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.0"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/total_hours"
+                    android:textColor="@color/light_gray"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Separatore -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="40dp"
+                android:background="@color/light_gray"
+                android:alpha="0.3"/>
+
+            <!-- Giochi totali -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvTotalGames"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/total_games"
+                    android:textColor="@color/light_gray"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Separatore -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="40dp"
+                android:background="@color/light_gray"
+                android:alpha="0.3"/>
+
+            <!-- Completion rate -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvCompletion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Completion"
+                    android:textColor="@color/light_gray"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Contenuto scorrevole -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="24dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/statsCard"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Sezione Giochi Recenti -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/recent_games"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:id="@+id/tvRecentGames"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_recent_games"
+                android:textColor="@color/light_gray"
+                android:textSize="14sp"
+                android:lineSpacingExtra="8dp"
+                android:layout_marginBottom="32dp"/>
+
+            <!-- Sezione Achievement -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nearly_completed"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:id="@+id/tvNearlyComplete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_nearly_completed"
+                android:textColor="@color/light_gray"
+                android:textSize="14sp"
+                android:lineSpacingExtra="8dp"
+                android:layout_marginBottom="32dp"/>
+
+            <!-- Bottone Aggiorna -->
+            <Button
+                android:id="@+id/btnRefresh"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="@string/refresh"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:backgroundTint="@color/blue_accent"
+                android:layout_marginTop="16dp"
+                android:drawableStart="@drawable/ic_refresh"
+                android:drawablePadding="8dp"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Navigation Bar (come in grafica Compose) -->
+    <RelativeLayout
+        android:id="@+id/bottomNavLayout"
+        android:layout_width="0dp"
+        android:layout_height="165dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Parte curva blu -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:background="@drawable/bottom_nav_background"
+            android:layout_alignParentBottom="true"/>
+
+        <!-- Parte curva nera centrale -->
+        <View
+            android:layout_width="180dp"
+            android:layout_height="90dp"
+            android:background="@drawable/bottom_nav_center"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"/>
+
+        <!-- Icona Home (centro) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp">
+
+            <ImageButton
+                android:id="@+id/btnHome"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_home"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/menu_home"/>
+
+            <!-- Indicatore attivo -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="3dp"
+                android:background="@color/white"
+                android:layout_marginTop="4dp"
+                android:visibility="visible"/>
+
+        </LinearLayout>
+
+        <!-- Icona Giochi (sinistra) -->
+        <ImageButton
+            android:id="@+id/btnGames"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/ic_joystick"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/menu_games"
+            android:rotation="-60"
+            android:layout_marginStart="40dp"
+            android:layout_marginBottom="30dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"/>
+
+        <!-- Icona Calendario (destra) -->
+        <ImageButton
+            android:id="@+id/btnCalendar"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/ic_calendar"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/menu_calendar"
+            android:rotation="60"
+            android:layout_marginEnd="40dp"
+            android:layout_marginBottom="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"/>
+
+    </RelativeLayout>
+
+    <!-- Progress Bar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -18,258 +404,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Contenuto principale (visibile quando non in loading) -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/contentGroup"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <!-- Header con avatar e nome -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="24dp">
-
-                <ImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_steam"
-                    android:layout_marginEnd="16dp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvPlayerName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Player Name"
-                        android:textColor="#FFFFFF"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvMockIndicator"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🎮 Dati Mock"
-                        android:textColor="#FF6A00"
-                        android:textSize="12sp"
-                        android:visibility="gone"
-                        android:layout_marginTop="4dp" />
-
-                </LinearLayout>
-
-                <!-- Switch Mock Mode -->
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/switchMockMode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Mock"
-                    android:textColor="#8C8C8C" />
-
-            </LinearLayout>
-
-            <!-- Statistiche principali -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="32dp"
-                android:gravity="center">
-
-                <!-- Ore totali -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🎮"
-                        android:textSize="24sp"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvTotalHours"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0.0"
-                        android:textColor="#FFFFFF"
-                        android:textSize="28sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Ore totali"
-                        android:textColor="#8C8C8C"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <!-- Separatore -->
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="40dp"
-                    android:background="#2C2C34" />
-
-                <!-- Giochi totali -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📊"
-                        android:textSize="24sp"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvTotalGames"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="#FFFFFF"
-                        android:textSize="28sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Giochi"
-                        android:textColor="#8C8C8C"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <!-- Separatore -->
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="40dp"
-                    android:background="#2C2C34" />
-
-                <!-- Achievement -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🏆"
-                        android:textSize="24sp"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvAchievementRate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0%"
-                        android:textColor="#FFFFFF"
-                        android:textSize="28sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Completion"
-                        android:textColor="#8C8C8C"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- Giochi recenti -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎮 Giochi recenti"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
-
-            <TextView
-                android:id="@+id/tvRecentGames"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Nessun gioco recente"
-                android:textColor="#8C8C8C"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="32dp" />
-
-            <!-- Achievement quasi completati -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎯 Achievement quasi completati"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
-
-            <TextView
-                android:id="@+id/tvNearlyComplete"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Nessun achievement quasi completato"
-                android:textColor="#8C8C8C"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="32dp" />
-
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="🔙 Logout"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#171A21"
-                android:layout_marginTop="16dp" />
-
-            <!-- Bottone refresh -->
-            <Button
-                android:id="@+id/btnRefresh"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="🔄 Aggiorna dati"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#FF6A00"
-                android:layout_marginTop="16dp" />
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

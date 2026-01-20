@@ -7,6 +7,7 @@
     <!-- Login -->
     <string name="login_with_steam">Accedi con Steam</string>
     <string name="continue_without_account">Continua senza account</string>
+    <string name="demo_player_name">Nome Demo Player:</string>
 
     <!-- Dashboard -->
     <string name="steam_profile">Profilo Steam</string>
@@ -17,19 +18,36 @@
     <string name="total_games">Giochi</string>
     <string name="recent_games">Giochi Recenti</string>
     <string name="nearly_completed">Obiettivi Quasi Completati</string>
-
-    <!-- Messaggi -->
-    <string name="no_recent_games">Nessun gioco recente</string>
-    <string name="no_nearly_completed">Nessun obiettivo quasi completato</string>
+    <string name="mock_mode">Modalità Mock</string>
     <string name="loading">Caricamento...</string>
-    <string name="error_loading">Errore nel caricamento</string>
-    <string name="retry">Riprova</string>
-    <string name="refresh">Aggiorna</string>
-    <string name="logout">Esci</string>
 
     <!-- Menu -->
+    <string name="menu_home">Home</string>
+    <string name="menu_games">Giochi</string>
     <string name="menu_profile">Profilo</string>
+    <string name="menu_friends">Amici</string>
+    <string name="menu_calendar">Calendario</string>
+    <string name="menu_trophies">Trofei</string>
     <string name="menu_settings">Impostazioni</string>
     <string name="menu_help">Aiuto</string>
     <string name="menu_about">Informazioni</string>
+
+    <!-- Actions -->
+    <string name="refresh">Aggiorna</string>
+    <string name="logout">Esci</string>
+    <string name="back">Indietro</string>
+    <string name="search">Cerca...</string>
+
+    <!-- Status -->
+    <string name="no_recent_games">Nessun gioco recente</string>
+    <string name="no_nearly_completed">Nessun obiettivo quasi completato</string>
+    <string name="error_loading">Errore nel caricamento</string>
+    <string name="retry">Riprova</string>
+    <string name="mock_data">🎮 Dati Mock</string>
+
+    <!-- Profile -->
+    <string name="profile_level">Livello</string>
+    <string name="profile_friends">Amici</string>
+    <string name="profile_followers">Follower</string>
+    <string name="profile_hours">Ore</string>
 </resources>

@@ -22,22 +22,25 @@ class GamesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_games, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val view = inflater.inflate(R.layout.fragment_games, container, false)
 
         recyclerView = view.findViewById(R.id.rvGames)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = GamesAdapter()
         recyclerView.adapter = adapter
 
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         viewModel = ViewModelProvider(requireActivity()).get(DashboardViewModel::class.java)
 
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is com.example.theplaybook.ui.dashboard.DashboardUiState.Success -> {
+                    // Passa tutti i giochi, non solo quelli recenti
                     adapter.submitList(state.data.recentGames)
                 }
                 else -> {}

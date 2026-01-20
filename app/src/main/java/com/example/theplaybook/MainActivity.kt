@@ -1,129 +1,146 @@
 package com.example.theplaybook
 
 import android.content.Intent
-import android.graphics.Color
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
-import android.widget.LinearLayout
+import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.theplaybook.ui.dashboard.DashboardActivity  // ← Aggiungi questo import
+import com.example.theplaybook.ui.dashboard.DashboardActivity
 
 class MainActivity : AppCompatActivity() {
 
+    // View references
+    private lateinit var btnSteamLogin: Button
+    private lateinit var btnDemoMode: Button
+    private lateinit var tvStatus: TextView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var loginCard: CardView
+    private lateinit var etDemoUsername: EditText
+
+    // Preferences
+    private lateinit var prefs: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        val linearLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = android.view.Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#0F0F13"))
-            setPadding(48, 48, 48, 48)
+        // Inizializza preferences
+        prefs = getSharedPreferences("theplaybook_prefs", MODE_PRIVATE)
+
+        // Inizializza le view
+        initViews()
+
+        // Carica nome demo salvato (se esiste)
+        loadSavedDemoName()
+
+        // Setup click listeners
+        setupClickListeners()
+    }
+
+    private fun initViews() {
+        btnSteamLogin = findViewById(R.id.btnSteamLogin)
+        btnDemoMode = findViewById(R.id.btnDemoMode)
+        tvStatus = findViewById(R.id.tvStatus)
+        progressBar = findViewById(R.id.progressBar)
+        loginCard = findViewById(R.id.loginCard)
+        etDemoUsername = findViewById(R.id.etDemoUsername)
+    }
+
+    private fun loadSavedDemoName() {
+        val savedName = prefs.getString("demo_player_name", null)
+        if (savedName != null) {
+            etDemoUsername.setText(savedName)
         }
+    }
 
-        // Titolo
-        linearLayout.addView(TextView(this).apply {
-            text = "🎮 ThePlayBook"
-            textSize = 32f
-            setTextColor(Color.WHITE)
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 0, 0, 16)
-        })
-
-        // Slogan
-        linearLayout.addView(TextView(this).apply {
-            text = "Tutte le tue statistiche su un'unica app"
-            textSize = 16f
-            setTextColor(Color.parseColor("#8C8C8C"))
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 0, 0, 32)
-        })
-
-        // Status text
-        val statusText = TextView(this).apply {
-            text = "Premi un pulsante"
-            textSize = 14f
-            setTextColor(Color.parseColor("#FF6A00"))
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 0, 0, 16)
-        }
-
+    private fun setupClickListeners() {
         // Bottone Steam Login
-        val steamBtn = Button(this).apply {
-            text = "Simula Login Steam"
-            setBackgroundColor(Color.parseColor("#171A21"))
-            setTextColor(Color.WHITE)
-            textSize = 16f
-            setPadding(48, 24, 48, 24)
+        btnSteamLogin.setOnClickListener {
+            // Disabilita bottoni durante login
+            btnSteamLogin.isEnabled = false
+            btnDemoMode.isEnabled = false
+            btnSteamLogin.text = "Login in corso..."
+            tvStatus.text = "Autenticazione in corso..."
+            progressBar.visibility = android.view.View.VISIBLE
 
-            setOnClickListener {
-                // Disabilita bottone durante login
-                isEnabled = false
-                text = "Login in corso..."
-                statusText.text = "Autenticazione in corso..."
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    // Usa SteamAuthManager
+                    val authManager = com.example.theplaybook.auth.SteamAuthManager(this@MainActivity)
+                    val result = authManager.signInWithSteam()
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    try {
-                        // Usa DIRECTAMENTE SteamAuthManager
-                        val authManager = com.example.theplaybook.auth.SteamAuthManager(this@MainActivity)
-                        val result = authManager.signInWithSteam()
+                    if (result.isSuccess) {
+                        val steamId = result.getOrNull() ?: ""
+                        tvStatus.text = "✅ Login riuscito!\nSteam ID: $steamId"
+                        btnSteamLogin.text = "Accesso effettuato"
+                        btnSteamLogin.setBackgroundResource(R.drawable.button_steam_background)
 
-                        if (result.isSuccess) {
-                            val steamId = result.getOrNull() ?: ""
-                            statusText.text = "✅ Login riuscito!\nSteam ID: $steamId"
-                            text = "Accesso effettuato"
-                            setBackgroundColor(Color.parseColor("#4CAF50"))
-
-                            // AGGIUNGI QUI: Apri DashboardActivity
-                            val intent = Intent(this@MainActivity, DashboardActivity::class.java)
-                            intent.putExtra("STEAM_ID", steamId)
-                            startActivity(intent)
-                            // finish() // Opzionale: chiudi MainActivity dopo login
-
-                        } else {
-                            statusText.text = "❌ Login fallito"
-                            text = "Riprova"
-                            setBackgroundColor(Color.parseColor("#171A21"))
-                            isEnabled = true
+                        // Salva anche il nome demo se inserito
+                        val demoName = etDemoUsername.text.toString().trim()
+                        if (demoName.isNotEmpty()) {
+                            prefs.edit().putString("demo_player_name", demoName).apply()
                         }
-                    } catch (e: Exception) {
-                        statusText.text = "Errore: ${e.message}"
-                        text = "Riprova"
-                        setBackgroundColor(Color.parseColor("#171A21"))
-                        isEnabled = true
+
+                        // Apri DashboardActivity
+                        val intent = Intent(this@MainActivity, DashboardActivity::class.java)
+                        intent.putExtra("STEAM_ID", steamId)
+                        startActivity(intent)
+
+                    } else {
+                        tvStatus.text = "❌ Login fallito"
+                        btnSteamLogin.text = "Riprova"
+                        btnSteamLogin.setBackgroundResource(R.drawable.button_steam_background)
+                        btnSteamLogin.isEnabled = true
+                        btnDemoMode.isEnabled = true
                     }
+                } catch (e: Exception) {
+                    tvStatus.text = "Errore: ${e.message}"
+                    btnSteamLogin.text = "Riprova"
+                    btnSteamLogin.setBackgroundResource(R.drawable.button_steam_background)
+                    btnSteamLogin.isEnabled = true
+                    btnDemoMode.isEnabled = true
+                } finally {
+                    progressBar.visibility = android.view.View.GONE
                 }
             }
         }
 
         // Bottone Demo
-        val demoBtn = Button(this).apply {
-            text = "Modalità Demo"
-            setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.parseColor("#8C8C8C"))
-            textSize = 14f
-
-            setOnClickListener {
-                statusText.text = "🎮 Modalità demo attiva\nUsa dati di esempio"
-                steamBtn.text = "Simula Login Steam"
-                steamBtn.setBackgroundColor(Color.parseColor("#171A21"))
-                steamBtn.isEnabled = true
-
-                // AGGIUNGI QUI: Apri DashboardActivity in modalità demo
-                val intent = Intent(this@MainActivity, DashboardActivity::class.java)
-                // Non passare STEAM_ID, così userà MockPlayer.PLAYER_1.steamId
-                startActivity(intent)
+        btnDemoMode.setOnClickListener {
+            // Salva il nome demo
+            val demoName = etDemoUsername.text.toString().trim()
+            if (demoName.isNotEmpty()) {
+                prefs.edit().putString("demo_player_name", demoName).apply()
+                tvStatus.text = "🎮 Modalità demo attiva\nGiocatore: $demoName"
+            } else {
+                tvStatus.text = "🎮 Modalità demo attiva\nUsa dati di esempio"
             }
+
+            btnSteamLogin.text = "Simula Login Steam"
+            btnSteamLogin.setBackgroundResource(R.drawable.button_steam_background)
+            btnSteamLogin.isEnabled = true
+
+            // Apri DashboardActivity in modalità demo
+            val intent = Intent(this, DashboardActivity::class.java)
+            // Passa anche il nome demo
+            intent.putExtra("DEMO_NAME", demoName)
+            startActivity(intent)
         }
+    }
 
-        // Aggiungi elementi
-        linearLayout.addView(steamBtn)
-        linearLayout.addView(demoBtn)
-        linearLayout.addView(statusText)
-
-        setContentView(linearLayout)
+    override fun onResume() {
+        super.onResume()
+        // Quando si torna indietro, riabilita i bottoni
+        btnSteamLogin.isEnabled = true
+        btnDemoMode.isEnabled = true
+        btnSteamLogin.text = "Simula Login Steam"
+        progressBar.visibility = android.view.View.GONE
     }
 }
