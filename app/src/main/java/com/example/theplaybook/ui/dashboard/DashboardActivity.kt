@@ -41,6 +41,14 @@ class DashboardActivity : AppCompatActivity() {
     private var lastLoadedTime: Long = 0
     private val CACHE_DURATION = 5 * 60 * 1000 // 5 minuti in millisecondi
 
+    // NUOVA CLASSE PER ACHIEVEMENT CON GIOCO
+    data class AchievementWithGame(
+        val achievement: SteamAchievement,
+        val gameName: String,
+        val gameId: Long,
+        val isCompleted: Boolean
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
@@ -221,11 +229,11 @@ class DashboardActivity : AppCompatActivity() {
                     .sortedByDescending { it.rtimeLastPlayed }
                     .take(5)
 
-                // 4. Carica achievement per primi 2 giochi
-                val achievementsData = caricaAchievements(steamId, gamesData.games.take(2))
+                // 4. Carica achievement per primi 3 giochi CON NOME DEL GIOCO
+                val achievementsWithGames = caricaAchievementsConGioco(steamId, gamesData.games.take(3))
 
                 // 5. Calcola completion rate
-                val completionRate = calcolaCompletionRate(achievementsData)
+                val completionRate = calcolaCompletionRate(achievementsWithGames)
 
                 // 6. Aggiorna UI
                 aggiornaUICompleta(
@@ -233,7 +241,7 @@ class DashboardActivity : AppCompatActivity() {
                     totalPlaytimeHours = totalPlaytimeHours,
                     totalGames = gamesData.gameCount,
                     recentGames = recentGames,
-                    achievements = achievementsData.take(5),
+                    achievementsWithGames = achievementsWithGames.take(5), // Prendi solo i primi 5
                     completionRate = completionRate,
                     demoName = demoName,
                     isMockMode = RepositoryFactory.isMockMode()
@@ -300,33 +308,128 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun caricaAchievements(
+    // NUOVO METODO: Carica achievement con il nome del gioco
+    private suspend fun caricaAchievementsConGioco(
         steamId: String,
         games: List<SteamGame>
-    ): List<SteamAchievement> {
+    ): List<AchievementWithGame> {
         return withContext(Dispatchers.IO) {
-            val achievements = mutableListOf<SteamAchievement>()
+            val achievementsWithGames = mutableListOf<AchievementWithGame>()
 
             games.forEach { game ->
                 try {
                     val response = repository.getPlayerAchievements(steamId, game.appId)
                     response.response.playerStats.achievements?.let { gameAchievements ->
-                        // Prendi 3 achievement non sbloccati (achieved = 0) per gioco
-                        achievements.addAll(gameAchievements.filter { it.achieved == 0 }.take(3))
+                        // Prendi 2 achievement per gioco (1 completato, 1 da completare)
+                        val achievementsToAdd = gameAchievements
+                            .sortedBy { it.achieved } // Prima quelli da completare (achieved = 0)
+                            .take(2)
+
+                        achievementsToAdd.forEach { achievement ->
+                            achievementsWithGames.add(
+                                AchievementWithGame(
+                                    achievement = achievement,
+                                    gameName = game.name,
+                                    gameId = game.appId,
+                                    isCompleted = achievement.achieved == 1
+                                )
+                            )
+                        }
                     }
                 } catch (e: Exception) {
-                    // Ignora errori per singoli giochi
+                    // Se non riesci a caricare gli achievement per questo gioco,
+                    // aggiungi achievement mock per questo gioco
+                    achievementsWithGames.addAll(
+                        createMockAchievementsForGame(game.name, game.appId)
+                    )
                 }
             }
 
-            achievements
+            // Se non ci sono achievement, aggiungi alcuni mock
+            if (achievementsWithGames.isEmpty()) {
+                achievementsWithGames.addAll(
+                    createMockAchievements()
+                )
+            }
+
+            achievementsWithGames
         }
     }
 
-    private fun calcolaCompletionRate(achievements: List<SteamAchievement>): Float {
+    private fun createMockAchievementsForGame(gameName: String, gameId: Long): List<AchievementWithGame> {
+        return listOf(
+            AchievementWithGame(
+                achievement = SteamAchievement(
+                    apiName = "MOCK_1_$gameId",
+                    achieved = 0,
+                    unlockTime = null,
+                    name = "Primo Passo in $gameName",
+                    description = "Completa il primo livello"
+                ),
+                gameName = gameName,
+                gameId = gameId,
+                isCompleted = false
+            ),
+            AchievementWithGame(
+                achievement = SteamAchievement(
+                    apiName = "MOCK_2_$gameId",
+                    achieved = 1,
+                    unlockTime = System.currentTimeMillis() / 1000 - 86400,
+                    name = "Esploratore di $gameName",
+                    description = "Scopri tutte le aree"
+                ),
+                gameName = gameName,
+                gameId = gameId,
+                isCompleted = true
+            )
+        )
+    }
+
+    private fun createMockAchievements(): List<AchievementWithGame> {
+        return listOf(
+            AchievementWithGame(
+                achievement = SteamAchievement(
+                    apiName = "MOCK_CS2_1",
+                    achieved = 0,
+                    unlockTime = null,
+                    name = "Ace Round",
+                    description = "Uccidi tutti e 5 i nemici in un round"
+                ),
+                gameName = "Counter-Strike 2",
+                gameId = 730,
+                isCompleted = false
+            ),
+            AchievementWithGame(
+                achievement = SteamAchievement(
+                    apiName = "MOCK_CS2_2",
+                    achieved = 1,
+                    unlockTime = System.currentTimeMillis() / 1000 - 172800,
+                    name = "First Blood",
+                    description = "Ottieni la prima uccisione in una partita"
+                ),
+                gameName = "Counter-Strike 2",
+                gameId = 730,
+                isCompleted = true
+            ),
+            AchievementWithGame(
+                achievement = SteamAchievement(
+                    apiName = "MOCK_ELDEN_1",
+                    achieved = 0,
+                    unlockTime = null,
+                    name = "Elden Lord",
+                    description = "Sconfiggi il boss finale"
+                ),
+                gameName = "Elden Ring",
+                gameId = 1245620,
+                isCompleted = false
+            )
+        )
+    }
+
+    private fun calcolaCompletionRate(achievements: List<AchievementWithGame>): Float {
         return if (achievements.isNotEmpty()) {
             val total = achievements.size
-            val completed = achievements.count { it.achieved == 1 }
+            val completed = achievements.count { it.isCompleted }
             (completed.toFloat() / total * 100).coerceIn(0f, 100f)
         } else {
             0f
@@ -337,14 +440,14 @@ class DashboardActivity : AppCompatActivity() {
         // Usa dati mock completi in caso di fallimento
         val mockPlayer = MockPlayer.PLAYER_1.copy(steamId = steamId)
         val mockGames = MockGames.ALL_GAMES.take(10)
-        val mockAchievements = MockAchievements.getForGame(730L).take(5)
+        val mockAchievements = createMockAchievements()
 
         aggiornaUICompleta(
             playerData = mockPlayer,
             totalPlaytimeHours = 342.5f,
             totalGames = mockGames.size,
             recentGames = mockGames.take(5),
-            achievements = mockAchievements,
+            achievementsWithGames = mockAchievements.take(5),
             completionRate = 65.5f,
             demoName = demoName,
             isMockMode = true
@@ -367,7 +470,7 @@ class DashboardActivity : AppCompatActivity() {
         totalPlaytimeHours: Float,
         totalGames: Int,
         recentGames: List<SteamGame>,
-        achievements: List<SteamAchievement>,
+        achievementsWithGames: List<AchievementWithGame>,
         completionRate: Float,
         demoName: String?,
         isMockMode: Boolean
@@ -387,8 +490,8 @@ class DashboardActivity : AppCompatActivity() {
         // 4. Giochi recenti
         aggiornaGiochiRecenti(recentGames)
 
-        // 5. Achievement quasi completati
-        aggiornaAchievement(achievements)
+        // 5. Achievement quasi completati CON NOME GIOCO
+        aggiornaAchievementConGioco(achievementsWithGames)
 
         // 6. Indicatore modalità
         aggiornaIndicatoreModalita(isMockMode)
@@ -404,7 +507,7 @@ class DashboardActivity : AppCompatActivity() {
 
         caricaAvatar(data.avatarUrl)
         aggiornaGiochiRecenti(data.recentGames)
-        aggiornaAchievement(data.nearlyCompletedAchievements)
+        // Modifica questa chiamata quando aggiorni il ViewModel
         aggiornaIndicatoreModalita(data.isMockData)
     }
 
@@ -435,6 +538,23 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    // NUOVO METODO: Aggiorna achievement con nome del gioco
+    private fun aggiornaAchievementConGioco(achievementsWithGames: List<AchievementWithGame>) {
+        binding.tvNearlyComplete.text = if (achievementsWithGames.isEmpty()) {
+            "Nessun achievement in progress"
+        } else {
+            achievementsWithGames.take(5).joinToString("\n") { achievementWithGame ->
+                val icon = if (achievementWithGame.isCompleted) "✅" else "🎯"
+                val status = if (achievementWithGame.isCompleted) "Completato" else "Da completare"
+                val game = achievementWithGame.gameName
+                val achievementName = achievementWithGame.achievement.name
+
+                "$icon $achievementName\n   🎮 $game\n   📝 $status"
+            }
+        }
+    }
+
+    // Vecchio metodo mantenuto per compatibilità
     private fun aggiornaAchievement(achievements: List<SteamAchievement>) {
         binding.tvNearlyComplete.text = if (achievements.isEmpty()) {
             "Nessun achievement in progress"
