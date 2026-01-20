@@ -32,6 +32,15 @@ class DashboardActivity : AppCompatActivity() {
     private val viewModel: DashboardViewModel by viewModels()
     private lateinit var repository: SteamApiService
 
+    // Variabili per gestire il caching dei dati
+    private var isDataLoaded = false
+    private var currentSteamId: String? = null
+    private var currentDemoName: String? = null
+    private var isMockMode = false
+    private var isDemoMode = false
+    private var lastLoadedTime: Long = 0
+    private val CACHE_DURATION = 5 * 60 * 1000 // 5 minuti in millisecondi
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
@@ -39,12 +48,12 @@ class DashboardActivity : AppCompatActivity() {
 
         // Inizializza repository
         repository = RepositoryFactory.createSteamRepository()
+        isMockMode = RepositoryFactory.isMockMode()
 
         // Ottieni Steam ID o usa demo
-        val steamId = intent.getStringExtra("STEAM_ID")
-            ?: MockPlayer.PLAYER_1.steamId
-
-        val demoName = intent.getStringExtra("DEMO_NAME")
+        currentSteamId = intent.getStringExtra("STEAM_ID") ?: MockPlayer.PLAYER_1.steamId
+        currentDemoName = intent.getStringExtra("DEMO_NAME")
+        isDemoMode = intent.getBooleanExtra("IS_DEMO_MODE", false) || currentDemoName != null
 
         // Setup UI
         setupUI()
@@ -52,8 +61,13 @@ class DashboardActivity : AppCompatActivity() {
         // Setup observers per ViewModel
         setupViewModelObservers()
 
-        // Carica dati
-        caricaDatiCompleta(steamId, demoName)
+        // Carica dati solo se necessario
+        if (shouldLoadData()) {
+            caricaDatiCompleta(currentSteamId!!, currentDemoName)
+        } else {
+            // Mostra dati esistenti se disponibili
+            showExistingDataIfAvailable()
+        }
     }
 
     private fun setupUI() {
@@ -72,6 +86,7 @@ class DashboardActivity : AppCompatActivity() {
         binding.switchMockMode.setOnCheckedChangeListener { _, isChecked ->
             RepositoryFactory.toggleMockMode(isChecked)
             repository = RepositoryFactory.createSteamRepository()
+            isMockMode = isChecked
 
             Snackbar.make(
                 binding.root,
@@ -79,16 +94,21 @@ class DashboardActivity : AppCompatActivity() {
                 Snackbar.LENGTH_SHORT
             ).show()
 
-            // Ricarica dati
-            val steamId = intent.getStringExtra("STEAM_ID") ?: MockPlayer.PLAYER_1.steamId
-            val demoName = intent.getStringExtra("DEMO_NAME")
+            // Forza ricaricamento quando cambia la modalità
+            isDataLoaded = false
+            val steamId = currentSteamId ?: MockPlayer.PLAYER_1.steamId
+            val demoName = currentDemoName
             caricaDatiCompleta(steamId, demoName)
         }
 
         // Bottone Aggiorna
         binding.btnRefresh.setOnClickListener {
-            val steamId = intent.getStringExtra("STEAM_ID") ?: MockPlayer.PLAYER_1.steamId
-            val demoName = intent.getStringExtra("DEMO_NAME")
+            // Forza il ricaricamento completo
+            isDataLoaded = false
+            lastLoadedTime = 0
+
+            val steamId = currentSteamId ?: MockPlayer.PLAYER_1.steamId
+            val demoName = currentDemoName
             caricaDatiCompleta(steamId, demoName)
 
             Snackbar.make(
@@ -100,16 +120,18 @@ class DashboardActivity : AppCompatActivity() {
 
         // Bottom Navigation
         binding.btnHome.setOnClickListener {
-            // Se siamo già in Dashboard, ricarica i dati
-            val steamId = intent.getStringExtra("STEAM_ID") ?: MockPlayer.PLAYER_1.steamId
-            val demoName = intent.getStringExtra("DEMO_NAME")
-            caricaDatiCompleta(steamId, demoName)
-
-            Snackbar.make(
-                binding.root,
-                "🏠 Dashboard aggiornata",
-                Snackbar.LENGTH_SHORT
-            ).show()
+            // Se siamo già in Dashboard, non ricaricare se i dati sono già presenti
+            if (!isDataLoaded) {
+                val steamId = currentSteamId ?: MockPlayer.PLAYER_1.steamId
+                val demoName = currentDemoName
+                caricaDatiCompleta(steamId, demoName)
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    "🏠 Dashboard",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
         }
 
         binding.btnGames.setOnClickListener {
@@ -129,11 +151,12 @@ class DashboardActivity : AppCompatActivity() {
                 is DashboardUiState.Loading -> showLoading(true)
                 is DashboardUiState.Success -> {
                     showLoading(false)
+                    isDataLoaded = true
+                    lastLoadedTime = System.currentTimeMillis()
                     aggiornaUIDaViewModel(state.data)
                 }
                 is DashboardUiState.Error -> {
                     showLoading(false)
-                    // Mostra errore con Snackbar invece di TextView
                     Snackbar.make(
                         binding.root,
                         "⚠️ ${state.message}",
@@ -145,6 +168,36 @@ class DashboardActivity : AppCompatActivity() {
 
         viewModel.isMockMode.observe(this) { isMock ->
             binding.switchMockMode.isChecked = isMock
+        }
+    }
+
+    // ==================== LOGICA DI CACHING ====================
+
+    private fun shouldLoadData(): Boolean {
+        // Se non sono mai stati caricati dati
+        if (!isDataLoaded) return true
+
+        // In modalità demo, non ricaricare a meno che non sia esplicitamente richiesto
+        if (isDemoMode) return false
+
+        // Se i dati sono più vecchi di CACHE_DURATION
+        if (System.currentTimeMillis() - lastLoadedTime > CACHE_DURATION) return true
+
+        // Se è cambiata la modalità mock
+        val currentMockMode = RepositoryFactory.isMockMode()
+        if (currentMockMode != isMockMode) return true
+
+        return false
+    }
+
+    private fun showExistingDataIfAvailable() {
+        // Se i dati sono già caricati, mostra quelli esistenti
+        if (isDataLoaded) {
+            Snackbar.make(
+                binding.root,
+                "📱 Usando dati in cache",
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -187,6 +240,8 @@ class DashboardActivity : AppCompatActivity() {
                 )
 
                 showLoading(false)
+                isDataLoaded = true
+                lastLoadedTime = System.currentTimeMillis()
 
                 Snackbar.make(
                     binding.root,
@@ -295,6 +350,9 @@ class DashboardActivity : AppCompatActivity() {
             isMockMode = true
         )
 
+        isDataLoaded = true
+        lastLoadedTime = System.currentTimeMillis()
+
         Snackbar.make(
             binding.root,
             "⚠️ Usando dati demo",
@@ -399,39 +457,20 @@ class DashboardActivity : AppCompatActivity() {
         binding.scrollView.isVisible = !show
     }
 
-    // ==================== LOGOUT ====================
-
-    private fun logout() {
-        Snackbar.make(
-            binding.root,
-            "Disconnessione in corso...",
-            Snackbar.LENGTH_SHORT
-        ).show()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val authManager = com.example.theplaybook.auth.SteamAuthManager(this@DashboardActivity)
-                authManager.signOut()
-            } catch (e: Exception) {
-                // Ignora
-            }
-        }
-
-        // Opzione A: Se MainActivity esiste nella directory principale
-        val intent = Intent(this, com.example.theplaybook.MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
-    }
-
     // ==================== LIFECYCLE ====================
 
     override fun onResume() {
         super.onResume()
-        // Aggiorna dati quando si ritorna all'activity
-        if (!binding.progressBar.isVisible) {
-            val steamId = intent.getStringExtra("STEAM_ID") ?: MockPlayer.PLAYER_1.steamId
-            val demoName = intent.getStringExtra("DEMO_NAME")
+
+        // In modalità demo, NON ricaricare i dati automaticamente
+        if (isDemoMode && isDataLoaded) {
+            return
+        }
+
+        // Altrimenti, controlla se è necessario ricaricare
+        if (shouldLoadData() && !binding.progressBar.isVisible) {
+            val steamId = currentSteamId ?: MockPlayer.PLAYER_1.steamId
+            val demoName = currentDemoName
             caricaDatiCompleta(steamId, demoName)
         }
     }
