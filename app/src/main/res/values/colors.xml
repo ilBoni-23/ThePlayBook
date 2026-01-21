@@ -47,4 +47,5 @@
     <!-- UI Elements -->
     <color name="divider">#2A2A2A</color>
     <color name="highlight">#3A3A3A</color>
+    <color name="text_hint">#888888</color>
 </resources>

@@ -1,140 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/card_background"
-    android:padding="24dp">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/card_background">
 
-    <!-- Titolo -->
+    <!-- Titolo evento (OBBLIGATORIO) -->
     <TextView
-        android:id="@+id/tvDialogTitle"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="AGGIUNGI EVENTO"
+        android:text="Titolo *"
         android:textColor="@color/white"
-        android:textSize="20sp"
         android:textStyle="bold"
-        android:gravity="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginBottom="4dp"/>
 
-    <!-- Campo nome evento -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilEventName"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox"
-        android:layout_width="0dp"
+    <EditText
+        android:id="@+id/etEventName"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nome Evento"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/tvDialogTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:hint="Es: Uscita GTA VI, Sessione gaming..."
+        android:textColor="@color/white"
+        android:textColorHint="@color/text_hint"
+        android:backgroundTint="@color/white"
+        android:maxLines="1"/>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etEventName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Data e ora -->
-    <LinearLayout
-        android:id="@+id/layoutDateTime"
-        android:layout_width="0dp"
+    <!-- Data (OBBLIGATORIA) -->
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:text="Data *"
+        android:textColor="@color/white"
+        android:textStyle="bold"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tilEventName"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_marginBottom="4dp"/>
 
-        <!-- Data inizio -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginEnd="8dp">
+    <Button
+        android:id="@+id/btnStartDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seleziona data *"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/blue_accent"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Data Inizio"
-                android:textColor="@color/light_gray"
-                android:textSize="12sp"/>
+    <!-- Ora (FACOLTATIVA) -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ora (facoltativa)"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"/>
 
-            <Button
-                android:id="@+id/btnStartDate"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="GG/MM/AAAA"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/card_background"
-                android:layout_marginTop="4dp"/>
-
-        </LinearLayout>
-
-        <!-- Ora inizio -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="8dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ora Inizio"
-                android:textColor="@color/light_gray"
-                android:textSize="12sp"/>
-
-            <Button
-                android:id="@+id/btnStartTime"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="00:00"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/card_background"
-                android:layout_marginTop="4dp"/>
-
-        </LinearLayout>
-
-    </LinearLayout>
+    <Button
+        android:id="@+id/btnStartTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ora (facoltativa)"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/blue_accent"/>
 
     <!-- Tipo evento -->
     <TextView
-        android:id="@+id/tvEventType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tipo Evento:"
-        android:textColor="@color/light_gray"
-        android:textSize="12sp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutDateTime"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:text="Tipo evento"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"/>
 
     <RadioGroup
         android:id="@+id/rgEventType"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvEventType"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <RadioButton
-            android:id="@+id/rbPersonal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Personale"
-            android:textColor="@color/white"/>
+        android:orientation="horizontal">
 
         <RadioButton
             android:id="@+id/rbGaming"
@@ -142,91 +84,90 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Gaming"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:buttonTint="@color/white"/>
 
+        <RadioButton
+            android:id="@+id/rbPersonal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Personale"
+            android:textColor="@color/white"
+            android:buttonTint="@color/white"/>
     </RadioGroup>
 
-    <!-- Sezione gaming (visibile solo se selezionato) -->
+    <!-- Sezione gioco (solo per gaming) -->
     <LinearLayout
         android:id="@+id/layoutGamingOptions"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/rgEventType"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_marginTop="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Giochi:"
-            android:textColor="@color/light_gray"
-            android:textSize="12sp"/>
+            android:text="Gioco (facoltativo)"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
 
         <Spinner
             android:id="@+id/spinnerGames"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="4dp"
-            android:backgroundTint="@color/blue_accent"/>
-
+            android:layout_height="wrap_content"
+            android:popupBackground="@color/card_background"
+            android:backgroundTint="@color/white"/>
     </LinearLayout>
 
-    <!-- Note -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilNotes"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox"
-        android:layout_width="0dp"
+    <!-- Descrizione (FACOLTATIVA) -->
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Note (opzionale)"
+        android:text="Descrizione (facoltativa)"
+        android:textColor="@color/white"
+        android:textStyle="bold"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutGamingOptions"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_marginBottom="4dp"/>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etNotes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:inputType="textMultiLine"
-            android:minLines="3"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
+    <EditText
+        android:id="@+id/etNotes"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:hint="Note aggiuntive..."
+        android:gravity="top"
+        android:textColor="@color/white"
+        android:textColorHint="@color/text_hint"
+        android:backgroundTint="@color/white"
+        android:inputType="textMultiLine"/>
 
     <!-- Bottoni -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/tilNotes"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_marginTop="24dp">
 
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="ANNULLA"
+            android:text="Annulla"
             android:textColor="@color/white"
-            android:backgroundTint="@android:color/transparent"
+            android:backgroundTint="@color/error_red"
             android:layout_marginEnd="8dp"/>
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="SALVA"
+            android:text="Salva"
             android:textColor="@color/white"
-            android:backgroundTint="@color/blue_accent"
-            android:layout_marginStart="8dp"/>
-
+            android:backgroundTint="@color/success_green"/>
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
